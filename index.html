@@ -1,0 +1,1425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grok Imagine — Video Generator</title>
+<meta name="description" content="Generate stunning AI videos with Grok Imagine via Crun.ai API">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a28;--bg4:#222235;
+  --surface:#16162a;--surface2:#1e1e36;--surface3:#262642;
+  --border:#2a2a4a;--border2:#3a3a5a;
+  --text:#e8e8f0;--text2:#a8a8c0;--text3:#6868a0;
+  --accent:#7c5cfc;--accent2:#9b7cff;--accent3:#b99cff;
+  --success:#22c55e;--warning:#f59e0b;--error:#ef4444;
+  --glass:rgba(22,22,42,0.7);
+  --gradient:linear-gradient(135deg,#7c5cfc 0%,#c084fc 50%,#f472b6 100%);
+  --gradient2:linear-gradient(135deg,#1e1e36 0%,#2a1a4a 100%);
+  --shadow:0 8px 32px rgba(0,0,0,0.4);
+  --shadow2:0 4px 16px rgba(124,92,252,0.15);
+  --radius:12px;--radius2:16px;--radius3:20px;
+}
+html{font-family:'Inter',system-ui,sans-serif;font-size:14px;color:var(--text);background:var(--bg);scroll-behavior:smooth}
+body{min-height:100vh;background:var(--bg)}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 0%,rgba(124,92,252,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(244,114,182,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+
+/* Layout */
+.app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:24px 20px 60px}
+
+/* Header */
+.header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;margin-bottom:32px;border-bottom:1px solid var(--border)}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{width:40px;height:40px;border-radius:12px;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;box-shadow:var(--shadow2)}
+.logo h1{font-size:20px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.logo span{font-size:12px;color:var(--text3);font-weight:400;display:block;margin-top:2px}
+.header-actions{display:flex;align-items:center;gap:12px}
+.balance-pill{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .2s}
+.balance-pill:hover{border-color:var(--accent);background:var(--surface2)}
+.balance-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
+.balance-pill .credits{font-weight:600;color:var(--accent2)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+.icon-btn{width:40px;height:40px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text2);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;font-size:16px;position:relative}
+.icon-btn:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent2);transform:translateY(-1px)}
+.icon-btn .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* Main Grid */
+.main{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+@media(max-width:900px){.main{grid-template-columns:1fr}}
+
+/* Cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden}
+.card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-header h2{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
+.card-header h2 .emoji{font-size:18px}
+.card-body{padding:20px}
+
+/* Form Controls */
+.form-group{margin-bottom:16px}
+.form-group:last-child{margin-bottom:0}
+.form-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.form-label .hint{font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0}
+
+.form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:13px;transition:all .2s;outline:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,252,0.15)}
+.form-input::placeholder,.form-textarea::placeholder{color:var(--text3)}
+.form-select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236868a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
+.form-select option{background:var(--bg2);color:var(--text)}
+.form-textarea{resize:vertical;min-height:100px;line-height:1.6}
+
+/* Image Upload */
+.upload-zone{position:relative;border:2px dashed var(--border);border-radius:var(--radius2);padding:32px;text-align:center;cursor:pointer;transition:all .3s;background:var(--bg2);min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:rgba(124,92,252,0.05)}
+.upload-zone .upload-icon{font-size:40px;opacity:.6}
+.upload-zone .upload-text{font-size:14px;color:var(--text2);font-weight:500}
+.upload-zone .upload-hint{font-size:12px;color:var(--text3)}
+.upload-zone input{display:none}
+.upload-zone.has-image{padding:8px;border-style:solid}
+.upload-zone.has-image img{max-width:100%;max-height:280px;border-radius:8px;object-fit:contain}
+.upload-zone .remove-img{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;z-index:2}
+.upload-zone .remove-img:hover{background:var(--error)}
+
+/* Prompt Box */
+.prompt-wrap{position:relative}
+.prompt-wrap .prompt-actions{position:absolute;bottom:8px;right:8px;display:flex;gap:6px}
+.prompt-wrap .prompt-actions button{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
+.prompt-wrap .prompt-actions button:hover{border-color:var(--accent);color:var(--accent2)}
+
+/* Settings Row */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.settings-grid.three{grid-template-columns:1fr 1fr 1fr}
+
+/* Duration Slider */
+.slider-wrap{display:flex;align-items:center;gap:12px}
+.slider-wrap input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--bg);outline:none}
+.slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px rgba(124,92,252,0.4);transition:all .2s}
+.slider-wrap input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
+.slider-val{min-width:36px;text-align:center;font-weight:600;color:var(--accent2);font-size:14px}
+
+/* Cost Estimate */
+.cost-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--gradient2);border:1px solid var(--border);border-radius:var(--radius);margin-top:16px}
+.cost-bar .cost-label{font-size:12px;color:var(--text3)}
+.cost-bar .cost-value{font-size:15px;font-weight:700;color:var(--warning)}
+
+/* Generate Button */
+.btn-generate{width:100%;padding:14px;border:none;border-radius:var(--radius);background:var(--gradient);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .3s;margin-top:16px;position:relative;overflow:hidden;letter-spacing:.3px}
+.btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,92,252,0.35)}
+.btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-generate::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transition:left .6s}
+.btn-generate:hover:not(:disabled)::after{left:100%}
+
+/* Output Area */
+.output-area{display:flex;flex-direction:column;gap:16px}
+.output-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;text-align:center;gap:16px;color:var(--text3);padding:40px}
+.output-placeholder .ph-icon{font-size:60px;opacity:.3}
+.output-placeholder .ph-text{font-size:15px;font-weight:500}
+.output-placeholder .ph-hint{font-size:12px;opacity:.6}
+
+/* Progress */
+.progress-container{display:none;flex-direction:column;gap:16px;padding:20px}
+.progress-container.active{display:flex}
+.progress-bar-wrap{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
+.progress-bar{height:100%;width:0%;background:var(--gradient);border-radius:3px;transition:width .5s ease}
+.progress-status{display:flex;align-items:center;justify-content:space-between;font-size:13px}
+.progress-status .status-text{display:flex;align-items:center;gap:8px;color:var(--text2)}
+.progress-status .status-text .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.progress-status .elapsed{color:var(--text3)}
+
+/* Video Result */
+.video-result{display:none;flex-direction:column;gap:12px}
+.video-result.active{display:flex}
+.video-result video{width:100%;border-radius:var(--radius);background:#000;max-height:450px}
+.video-actions{display:flex;gap:8px}
+.video-actions button{flex:1;padding:10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.video-actions button:hover{border-color:var(--accent);color:var(--accent2);background:var(--surface3)}
+.video-actions .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.video-actions .btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+
+/* Error */
+.error-box{display:none;padding:16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);color:var(--error);font-size:13px;line-height:1.5}
+.error-box.active{display:block}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.active{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius3);width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;box-shadow:var(--shadow);animation:modalIn .25s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:16px;font-weight:600;display:flex;align-items:center;gap:8px}
+.modal-close{width:32px;height:32px;border-radius:8px;border:none;background:var(--bg2);color:var(--text2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s}
+.modal-close:hover{background:var(--error);color:#fff}
+.modal-body{padding:20px;overflow-y:auto;flex:1}
+.modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
+.modal-footer button{padding:8px 18px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;transition:all .2s}
+.modal-footer button:hover{border-color:var(--accent);color:var(--accent2)}
+.modal-footer .btn-save{background:var(--accent);border-color:var(--accent);color:#fff}
+.modal-footer .btn-save:hover{background:var(--accent2)}
+
+/* Template/History Item */
+.list-item{padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;transition:all .2s;display:flex;align-items:flex-start;gap:12px}
+.list-item:hover{border-color:var(--accent);background:var(--surface2)}
+.list-item:last-child{margin-bottom:0}
+.list-item .item-info{flex:1;min-width:0}
+.list-item .item-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-item .item-meta{font-size:11px;color:var(--text3);display:flex;flex-wrap:wrap;gap:8px}
+.list-item .item-prompt{font-size:12px;color:var(--text2);margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.list-item .item-actions{display:flex;gap:4px;flex-shrink:0}
+.list-item .item-actions button{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s}
+.list-item .item-actions button:hover{border-color:var(--error);color:var(--error);background:rgba(239,68,68,0.1)}
+.list-item .item-actions .use-btn:hover{border-color:var(--success);color:var(--success);background:rgba(34,197,94,0.1)}
+.list-item .item-thumb{width:60px;height:45px;border-radius:6px;object-fit:cover;background:var(--bg);flex-shrink:0}
+
+.empty-state{text-align:center;padding:32px;color:var(--text3)}
+.empty-state .empty-icon{font-size:40px;margin-bottom:8px;opacity:.3}
+.empty-state p{font-size:13px}
+
+/* Toast */
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px}
+.toast{padding:12px 20px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:13px;box-shadow:var(--shadow);animation:toastIn .3s ease;display:flex;align-items:center;gap:8px;max-width:360px}
+.toast.success{border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.1)}
+.toast.error{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.1)}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* Sync status */
+.sync-indicator{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:600;letter-spacing:.3px}
+.sync-indicator.synced{color:var(--success);background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2)}
+.sync-indicator.syncing{color:var(--warning);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)}
+.sync-indicator.error{color:var(--error);background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.2)}
+.sync-id-box{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);font-family:monospace;font-size:13px;color:var(--accent2);word-break:break-all}
+.sync-id-box button{flex-shrink:0;padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:11px;cursor:pointer;transition:all .2s}
+.sync-id-box button:hover{border-color:var(--accent);color:var(--accent2)}
+
+/* Responsive */
+@media(max-width:600px){
+  .app{padding:12px 12px 40px}
+  .header{flex-direction:column;gap:12px;align-items:flex-start}
+  .settings-grid,.settings-grid.three{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">G</div>
+      <div>
+        <h1>Grok Imagine</h1>
+        <span>Image-to-Video Generation · Powered by Crun.ai</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <div class="balance-pill" id="balancePill" onclick="fetchBalance()" title="Click to refresh">
+        <div class="dot"></div>
+        <span>Credits:</span>
+        <span class="credits" id="balanceValue">—</span>
+      </div>
+      <button class="icon-btn" id="historyBtn" onclick="openModal('history')" title="Generation History">
+        📜
+        <span class="badge" id="historyBadge" style="display:none">0</span>
+      </button>
+      <button class="icon-btn" onclick="openModal('cloudSync')" title="Cloud Sync Settings">
+        ☁️
+      </button>
+      <span class="sync-indicator" id="syncStatus" style="display:none"></span>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <div class="main">
+    <!-- Left: Controls -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <h2><span class="emoji">🖼️</span> Image Input</h2>
+        </div>
+        <div class="card-body">
+          <!-- Upload -->
+          <div class="form-group">
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+              <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+              <div class="upload-icon">🎞️</div>
+              <div class="upload-text">Drop image here or click to upload</div>
+              <div class="upload-hint">Supports JPG, PNG, WEBP · Max 10MB</div>
+            </div>
+          </div>
+
+          <!-- Prompt -->
+          <div class="form-group">
+            <label class="form-label">
+              Prompt
+              <span class="hint">Optional · Max 5000 chars</span>
+            </label>
+            <div class="prompt-wrap">
+              <textarea class="form-textarea" id="promptInput" placeholder="Describe the motion and animation you want…&#10;e.g. &quot;Animate the scene with gentle camera motion and soft lighting.&quot;" rows="4"></textarea>
+              <div class="prompt-actions">
+                <button onclick="saveTemplate()" title="Save as template">💾 Save</button>
+                <button onclick="openModal('templates')" title="Load saved template">📂 Load</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Settings -->
+          <div class="form-group">
+            <label class="form-label">Duration</label>
+            <div class="slider-wrap">
+              <input type="range" id="durationSlider" min="6" max="30" value="6" oninput="updateDuration()">
+              <span class="slider-val" id="durationVal">6s</span>
+            </div>
+          </div>
+
+          <div class="settings-grid three">
+            <div class="form-group">
+              <label class="form-label">Resolution</label>
+              <select class="form-select" id="resolutionSelect">
+                <option value="480p" selected>480p</option>
+                <option value="720p">720p</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aspect Ratio</label>
+              <select class="form-select" id="aspectSelect">
+                <option value="9:16" selected>9:16</option>
+                <option value="16:9">16:9</option>
+                <option value="1:1">1:1</option>
+                <option value="2:3">2:3</option>
+                <option value="3:2">3:2</option>
+              </select>
+              <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">Multi-image only. Single image uses its own ratio.</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mode</label>
+              <select class="form-select" id="modeSelect">
+                <option value="fun" selected>🎭 Fun</option>
+                <option value="normal">⚖️ Normal</option>
+                <option value="spicy">🔥 Spicy*</option>
+              </select>
+              <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">*Spicy requires task_id from a Grok t2i/i2i task.</span>
+            </div>
+          </div>
+
+          <!-- Cost -->
+          <div class="cost-bar">
+            <span class="cost-label">Estimated Cost</span>
+            <span class="cost-value" id="costEstimate">≈ 9.6 credits</span>
+          </div>
+
+          <!-- Generate -->
+          <button class="btn-generate" id="generateBtn" onclick="generateVideo()">
+            ⚡ Generate Video
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Output -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <h2><span class="emoji">🎬</span> Output</h2>
+          <span id="taskIdDisplay" style="font-size:11px;color:var(--text3)"></span>
+        </div>
+        <div class="card-body output-area">
+          <!-- Placeholder -->
+          <div class="output-placeholder" id="outputPlaceholder">
+            <div class="ph-icon">🎥</div>
+            <div class="ph-text">Your generated video will appear here</div>
+            <div class="ph-hint">Upload an image and hit Generate to start</div>
+          </div>
+
+          <!-- Progress -->
+          <div class="progress-container" id="progressContainer">
+            <div class="progress-status">
+              <div class="status-text">
+                <div class="spinner"></div>
+                <span id="statusText">Submitting task…</span>
+              </div>
+              <span class="elapsed" id="elapsedTime">0s</span>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div class="error-box" id="errorBox"></div>
+
+          <!-- Video Result -->
+          <div class="video-result" id="videoResult">
+            <video id="videoPlayer" controls playsinline></video>
+            <div class="video-actions">
+              <button class="btn-primary" onclick="downloadVideo()">⬇️ Download</button>
+              <button onclick="copyVideoUrl()">🔗 Copy URL</button>
+              <button onclick="generateAgain()">🔄 New</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Templates Modal -->
+<div class="modal-overlay" id="templatesModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📂 Saved Templates</h3>
+      <button class="modal-close" onclick="closeModal('templates')">✕</button>
+    </div>
+    <div class="modal-body" id="templatesList"></div>
+  </div>
+</div>
+
+<!-- History Modal -->
+<div class="modal-overlay" id="historyModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>📜 Generation History</h3>
+      <button class="modal-close" onclick="closeModal('history')">✕</button>
+    </div>
+    <div class="modal-body" id="historyList"></div>
+    <div class="modal-footer">
+      <button onclick="clearHistory()" style="color:var(--error)">🗑️ Clear All</button>
+    </div>
+  </div>
+</div>
+
+<!-- Save Template Modal -->
+<div class="modal-overlay" id="saveTemplateModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <h3>💾 Save Template</h3>
+      <button class="modal-close" onclick="closeModal('saveTemplate')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Template Title</label>
+        <input class="form-input" id="templateTitleInput" placeholder="e.g. Cinematic pan shot…" autofocus>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5">
+        This will save your current prompt and all settings (duration, resolution, aspect ratio, mode).
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button onclick="closeModal('saveTemplate')">Cancel</button>
+      <button class="btn-save" onclick="confirmSaveTemplate()">Save Template</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings & Sync Modal -->
+<div class="modal-overlay" id="cloudSyncModal">
+  <div class="modal" style="max-width:480px">
+    <div class="modal-header">
+      <h3>⚙️ Settings & Sync</h3>
+      <button class="modal-close" onclick="closeModal('cloudSync')">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div>
+
+      <!-- Crun.ai API Key -->
+      <div class="form-group">
+        <label class="form-label">Crun.ai API Key <span class="hint">Synced to cloud</span></label>
+        <div style="display:flex;gap:8px">
+          <div style="position:relative;flex:1">
+            <input class="form-input" id="apiKeyInput" type="password" placeholder="ak_xxxxxxxxxxxx…" style="padding-right:36px">
+            <button onclick="toggleApiKeyVisibility()" style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text3);cursor:pointer;font-size:14px;padding:4px" title="Show/Hide" id="apiKeyToggle">👁</button>
+          </div>
+          <button onclick="saveApiKey()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Save</button>
+        </div>
+        <span style="font-size:10px;color:var(--text3);margin-top:4px;display:block">Get one at <a href="https://crun.ai/user-api-key" target="_blank" style="color:var(--accent2)">crun.ai/user-api-key</a></span>
+      </div>
+
+      </div>
+
+      <div style="margin:16px 0;border-top:1px solid var(--border);padding-top:16px">
+        <p style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">
+          Your templates, history, and Crun.ai key are stored in the cloud via <strong>JSONBin.io</strong>.
+          Copy the Sync ID below and paste it on another browser (with your JSONBin key) to access the same data.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Your Sync ID <span class="hint">This is your JSONBin Bin ID</span></label>
+          <div class="sync-id-box">
+            <span id="syncIdDisplay" style="flex:1">Not connected</span>
+            <button onclick="copySyncId()">📋 Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin:16px 0;border-top:1px solid var(--border);padding-top:16px">
+        <div class="form-group">
+          <label class="form-label">Load from another Sync ID</label>
+          <div style="display:flex;gap:8px">
+            <input class="form-input" id="importSyncIdInput" placeholder="Paste a Bin ID here…" style="flex:1">
+            <button onclick="importSyncId()" style="padding:8px 16px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:#fff;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Load</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <button onclick="forceCloudSync()" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">🔄 Force Sync Now</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════
+const DEFAULT_API_KEY = 'ak_kxdgxaOZTyKr3CC5orqWxAcrCUMSNmNG';
+function getApiKey() {
+  return (cloudData.apiKey && cloudData.apiKey.trim()) || DEFAULT_API_KEY;
+}
+const API_BASE = 'https://api.crun.ai';
+const CREATE_TASK_URL = `${API_BASE}/api/v1/client/job/CreateTask`;
+const TASK_INFO_URL = `${API_BASE}/api/v1/client/job/TaskInfo`;
+const BALANCE_URL = `${API_BASE}/api/v1/client/account/balance`;
+const POLL_INTERVAL = 15000; // 15 seconds as per docs recommendation
+const MAX_POLL_TIME = 20 * 60 * 1000; // 20 minutes max
+
+// Pricing: credits per second
+const PRICING = { '480p': 1.6, '720p': 3.0 };
+
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let uploadedImageDataUrl = null;
+let currentTaskId = null;
+let pollTimer = null;
+let elapsedTimer = null;
+let elapsedSeconds = 0;
+let currentVideoUrl = null;
+
+// ══════════════════════════════════════════════════════
+// CLOUD STORAGE — JSONBin.io (free signup, returns ID in body)
+// ══════════════════════════════════════════════════════
+const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
+let cloudBinId = null;
+let cloudData = { templates: [], history: [], apiKey: '' };
+let syncDebounceTimer = null;
+let isSyncing = false;
+
+// ── JSONBin master key (hardcoded for personal use) ──
+const JSONBIN_KEY = '$2a$10$6CN0CEfmiBDjNeSUSPifDO8isPmgx/NC748XbpH6ogTFOm4UyhcbG';
+function getJsonbinKey() { return JSONBIN_KEY; }
+
+// ── Bin ID from URL hash or localStorage ──
+function getSavedBinId() {
+  const hash = location.hash.replace('#', '').trim();
+  if (hash && hash.length > 10) return hash;
+  try { return localStorage.getItem('grok_bin_id') || null; } catch { return null; }
+}
+function saveBinId(id) {
+  cloudBinId = id;
+  location.hash = id;
+  try { localStorage.setItem('grok_bin_id', id); } catch {}
+  document.getElementById('syncIdDisplay').textContent = id;
+}
+
+// ── Cloud CRUD ──
+async function cloudCreate(data) {
+  const key = getJsonbinKey();
+  if (!key) throw new Error('NO_KEY');
+  const res = await fetch(JSONBIN_BASE, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': key,
+      'X-Bin-Private': 'false',
+      'X-Bin-Name': 'GrokImagine'
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  const id = json.metadata && json.metadata.id;
+  if (!id) throw new Error('No bin ID in response');
+  return id;
+}
+
+async function cloudRead(binId) {
+  const key = getJsonbinKey();
+  if (!key) throw new Error('NO_KEY');
+  const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`, {
+    method: 'GET',
+    headers: { 'X-Master-Key': key }
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+  const json = await res.json();
+  return json.record || json;
+}
+
+async function cloudUpdate(binId, data) {
+  const key = getJsonbinKey();
+  if (!key) return;
+  const res = await fetch(`${JSONBIN_BASE}/${binId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Master-Key': key
+    },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+}
+
+// ── Sync status indicator ──
+function setSyncStatus(state, text) {
+  const el = document.getElementById('syncStatus');
+  el.style.display = 'inline-block';
+  el.className = 'sync-indicator ' + state;
+  el.textContent = text || ({ synced: '✓ Synced', syncing: '↻ Syncing…', error: '✗ Sync Error' }[state]);
+  if (state === 'synced') setTimeout(() => { el.style.display = 'none'; }, 3000);
+}
+
+// ── Initialize cloud storage ──
+async function initCloudStorage() {
+  const existingId = getSavedBinId();
+
+  if (existingId) {
+    try {
+      setSyncStatus('syncing');
+      const data = await cloudRead(existingId);
+      if (data && typeof data === 'object') {
+        cloudData = {
+          templates: Array.isArray(data.templates) ? data.templates : [],
+          history: Array.isArray(data.history) ? data.history : [],
+          apiKey: data.apiKey || ''
+        };
+        saveBinId(existingId);
+        setSyncStatus('synced');
+        updateHistoryBadge();
+        populateApiKeyInput();
+        return;
+      }
+    } catch (e) {
+      console.warn('Failed to load existing bin:', e);
+    }
+  }
+
+  // Create a new bin
+  try {
+    setSyncStatus('syncing', 'Creating…');
+    const initData = { templates: [], history: [], apiKey: DEFAULT_API_KEY };
+    const id = await cloudCreate(initData);
+    saveBinId(id);
+    cloudData = initData;
+    setSyncStatus('synced');
+    populateApiKeyInput();
+    showToast('Cloud storage connected! Sync ID: ' + id.substring(0, 8) + '…', 'success');
+  } catch (e) {
+    console.error('Cloud storage init failed:', e);
+    setSyncStatus('error');
+    showToast('Cloud init failed: ' + e.message, 'error');
+  }
+}
+
+// ── Save to cloud (debounced) ──
+function saveToCloud() {
+  if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
+  syncDebounceTimer = setTimeout(async () => {
+    if (!cloudBinId || isSyncing || !getJsonbinKey()) return;
+    isSyncing = true;
+    try {
+      setSyncStatus('syncing');
+      await cloudUpdate(cloudBinId, cloudData);
+      setSyncStatus('synced');
+    } catch (e) {
+      console.error('Cloud save failed:', e);
+      setSyncStatus('error');
+    } finally {
+      isSyncing = false;
+    }
+  }, 1500);
+}
+
+// ── Getters/Setters that work with cloud data ──
+function getTemplates() {
+  return cloudData.templates || [];
+}
+function setTemplates(arr) {
+  cloudData.templates = arr;
+  saveToCloud();
+}
+
+function getHistory() {
+  return cloudData.history || [];
+}
+function setHistory(arr) {
+  cloudData.history = arr;
+  saveToCloud();
+}
+
+// ── Sync UI actions ──
+function copySyncId() {
+  if (!cloudBinId) { showToast('No Sync ID yet. Set up JSONBin key first.', 'error'); return; }
+  navigator.clipboard.writeText(cloudBinId).then(() => {
+    showToast('Sync ID copied!', 'success');
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = cloudBinId;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Sync ID copied!', 'success');
+  });
+}
+
+async function importSyncId() {
+  const id = document.getElementById('importSyncIdInput').value.trim();
+  if (!id || id.length < 10) { showToast('Please paste a valid Bin ID.', 'error'); return; }
+  if (!getJsonbinKey()) { showToast('Enter your JSONBin key first.', 'error'); return; }
+  try {
+    setSyncStatus('syncing', 'Loading…');
+    const data = await cloudRead(id);
+    if (!data || typeof data !== 'object') {
+      throw new Error('Invalid or expired Bin ID.');
+    }
+    cloudData = {
+      templates: Array.isArray(data.templates) ? data.templates : [],
+      history: Array.isArray(data.history) ? data.history : [],
+      apiKey: data.apiKey || ''
+    };
+    saveBinId(id);
+    setSyncStatus('synced');
+    updateHistoryBadge();
+    populateApiKeyInput();
+    closeModal('cloudSync');
+    showToast(`Loaded ${cloudData.templates.length} templates and ${cloudData.history.length} history items!`, 'success');
+  } catch (e) {
+    setSyncStatus('error');
+    showToast('Failed to load: ' + e.message, 'error');
+  }
+}
+
+async function forceCloudSync() {
+  if (!cloudBinId) { showToast('No Sync ID yet.', 'error'); return; }
+  if (!getJsonbinKey()) { showToast('Enter your JSONBin key first.', 'error'); return; }
+  try {
+    setSyncStatus('syncing');
+    const data = await cloudRead(cloudBinId);
+    if (data && typeof data === 'object') {
+      cloudData = {
+        templates: Array.isArray(data.templates) ? data.templates : [],
+        history: Array.isArray(data.history) ? data.history : [],
+        apiKey: data.apiKey || ''
+      };
+      updateHistoryBadge();
+      populateApiKeyInput();
+    }
+    setSyncStatus('synced');
+    showToast('Synced with cloud!', 'success');
+  } catch (e) {
+    setSyncStatus('error');
+    showToast('Sync failed: ' + e.message, 'error');
+  }
+}
+
+// ── API Key management ──
+function populateApiKeyInput() {
+  const input = document.getElementById('apiKeyInput');
+  input.value = getApiKey();
+}
+
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val) { showToast('API key cannot be empty.', 'error'); return; }
+  cloudData.apiKey = val;
+  saveToCloud();
+  fetchBalance(); // refresh balance with new key
+  showToast('API key saved & synced to cloud!', 'success');
+}
+
+function toggleApiKeyVisibility() {
+  const input = document.getElementById('apiKeyInput');
+  const btn = document.getElementById('apiKeyToggle');
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════
+function showToast(msg, type = 'info') {
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+  toast.innerHTML = `${icons[type] || 'ℹ️'} ${msg}`;
+  container.appendChild(toast);
+  setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateY(10px)'; setTimeout(() => toast.remove(), 300); }, 4000);
+}
+
+// ══════════════════════════════════════════════════════
+// BALANCE
+// ══════════════════════════════════════════════════════
+async function fetchBalance() {
+  const el = document.getElementById('balanceValue');
+  el.textContent = '…';
+  try {
+    const res = await fetch(BALANCE_URL, {
+      method: 'GET',
+      headers: { 'x-api-key': getApiKey(), 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.code === 200 && data.data) {
+      const bal = parseFloat(data.data.balance);
+      el.textContent = bal.toFixed(1);
+    } else {
+      el.textContent = 'Err';
+      showToast('Failed to fetch balance: ' + (data.message || 'Unknown error'), 'error');
+    }
+  } catch (e) {
+    el.textContent = 'Err';
+    showToast('Network error fetching balance. Check CORS extension.', 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// COST ESTIMATION
+// ══════════════════════════════════════════════════════
+function updateCostEstimate() {
+  const dur = parseInt(document.getElementById('durationSlider').value);
+  const res = document.getElementById('resolutionSelect').value;
+  const rate = PRICING[res] || 1.6;
+  const cost = dur * rate;
+  document.getElementById('costEstimate').textContent = `≈ ${cost.toFixed(1)} credits`;
+}
+
+function updateDuration() {
+  const v = document.getElementById('durationSlider').value;
+  document.getElementById('durationVal').textContent = v + 's';
+  updateCostEstimate();
+}
+
+// Wire up cost recalculation
+document.getElementById('resolutionSelect').addEventListener('change', updateCostEstimate);
+document.getElementById('durationSlider').addEventListener('input', updateCostEstimate);
+
+// ══════════════════════════════════════════════════════
+// IMAGE UPLOAD
+// ══════════════════════════════════════════════════════
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) { showToast('File too large. Max 10MB.', 'error'); return; }
+  if (!file.type.startsWith('image/')) { showToast('Please select an image file.', 'error'); return; }
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    uploadedImageDataUrl = ev.target.result;
+    renderUploadPreview();
+  };
+  reader.readAsDataURL(file);
+}
+
+function renderUploadPreview() {
+  const zone = document.getElementById('uploadZone');
+  if (uploadedImageDataUrl) {
+    zone.classList.add('has-image');
+    zone.innerHTML = `
+      <img src="${uploadedImageDataUrl}" alt="Uploaded image">
+      <button class="remove-img" onclick="event.stopPropagation();removeImage()" title="Remove">✕</button>
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+    `;
+  } else {
+    zone.classList.remove('has-image');
+    zone.innerHTML = `
+      <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
+      <div class="upload-icon">🎞️</div>
+      <div class="upload-text">Drop image here or click to upload</div>
+      <div class="upload-hint">Supports JPG, PNG, WEBP · Max 10MB</div>
+    `;
+  }
+}
+
+function removeImage() {
+  uploadedImageDataUrl = null;
+  renderUploadPreview();
+}
+
+// Drag & Drop
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) {
+    const fakeEvent = { target: { files: [file] } };
+    handleFileSelect(fakeEvent);
+  }
+});
+
+// ══════════════════════════════════════════════════════
+// UPLOAD IMAGE TO GET A PUBLIC URL
+// ══════════════════════════════════════════════════════
+// Crun.ai API requires HTTP/HTTPS URLs for img_urls.
+// We upload to tmpfiles.org (free, no signup, direct link).
+
+function dataUrlToBlob(dataUrl) {
+  const parts = dataUrl.split(',');
+  const mime = parts[0].match(/:(.*?);/)[1];
+  const binary = atob(parts[1]);
+  const arr = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+}
+
+async function uploadImageAndGetUrl(dataUrl) {
+  const blob = dataUrlToBlob(dataUrl);
+  const ext = blob.type.split('/')[1] || 'png';
+  const fileName = `grok_input_${Date.now()}.${ext === 'jpeg' ? 'jpg' : ext}`;
+
+  // Upload to tmpfiles.org
+  const formData = new FormData();
+  formData.append('file', blob, fileName);
+
+  const res = await fetch('https://tmpfiles.org/api/v1/upload', {
+    method: 'POST',
+    body: formData
+  });
+
+  const json = await res.json();
+
+  if (json.status === 'success' && json.data && json.data.url) {
+    // Convert page URL to direct download URL
+    // Page:   https://tmpfiles.org/1234567/image.png
+    // Direct: https://tmpfiles.org/dl/1234567/image.png
+    const directUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
+    showToast('Image uploaded successfully!', 'success');
+    return directUrl;
+  }
+
+  throw new Error('Image upload failed: ' + (json.message || JSON.stringify(json)));
+}
+
+// ══════════════════════════════════════════════════════
+// GENERATE VIDEO
+// ══════════════════════════════════════════════════════
+async function generateVideo() {
+  // Validate
+  if (!uploadedImageDataUrl) {
+    showToast('Please upload an image first.', 'error');
+    return;
+  }
+
+  const prompt = document.getElementById('promptInput').value.trim();
+  const duration = parseInt(document.getElementById('durationSlider').value);
+  const resolution = document.getElementById('resolutionSelect').value;
+  const aspectRatio = document.getElementById('aspectSelect').value;
+  const mode = document.getElementById('modeSelect').value;
+
+  // Reset UI
+  resetOutput();
+  showProgress('Uploading image & submitting task…');
+
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Generating…';
+
+  try {
+    // Get image URL
+    const imgUrl = await uploadImageAndGetUrl(uploadedImageDataUrl);
+
+    // Build request body
+    const body = {
+      model: 'grok-imagine/i2v',
+      input: {
+        img_urls: [imgUrl],
+        duration: duration,
+        resolution: resolution,
+        aspect_ratio: aspectRatio,
+        mode: mode
+      }
+    };
+
+    if (prompt) {
+      body.input.prompt = prompt;
+    }
+
+    // Submit task
+    const res = await fetch(CREATE_TASK_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': getApiKey()
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+
+    if (data.code === 200 && data.data && data.data.task_id) {
+      currentTaskId = data.data.task_id;
+      document.getElementById('taskIdDisplay').textContent = `Task: ${currentTaskId.substring(0, 12)}…`;
+      updateProgress('Task submitted! Waiting for generation…', 15);
+      showToast('Task submitted successfully!', 'success');
+
+      // Start polling
+      startPolling(currentTaskId, { prompt, duration, resolution, aspectRatio, mode });
+    } else {
+      const errMsg = data.message || 'Unknown error';
+      const errors = data.errors ? data.errors.join(', ') : '';
+      throw new Error(`API Error (${data.code}): ${errMsg}${errors ? ' — ' + errors : ''}`);
+    }
+  } catch (e) {
+    showError(e.message);
+    showToast('Generation failed: ' + e.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '⚡ Generate Video';
+  }
+}
+
+// ══════════════════════════════════════════════════════
+// POLLING
+// ══════════════════════════════════════════════════════
+function startPolling(taskId, params) {
+  elapsedSeconds = 0;
+  elapsedTimer = setInterval(() => {
+    elapsedSeconds++;
+    document.getElementById('elapsedTime').textContent = formatTime(elapsedSeconds);
+  }, 1000);
+
+  const startTime = Date.now();
+
+  async function poll() {
+    if (Date.now() - startTime > MAX_POLL_TIME) {
+      stopPolling();
+      showError('Polling timed out after 20 minutes. Task may still be running — check the task ID manually.');
+      return;
+    }
+
+    try {
+      const url = `${TASK_INFO_URL}?task_id=${taskId}`;
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: { 'x-api-key': getApiKey(), 'Content-Type': 'application/json' }
+      });
+      const data = await res.json();
+
+      if (data.code === 200 && data.data) {
+        const task = data.data;
+        const status = task.status;
+
+        if (status === 'pending') {
+          updateProgress('Task queued — waiting for processing…', 20);
+        } else if (status === 'running') {
+          // Estimate progress based on elapsed time vs expected duration
+          const expectedTime = params.duration * 15; // rough estimate
+          const progress = Math.min(85, 25 + (elapsedSeconds / expectedTime) * 60);
+          updateProgress('Generating video… This may take a few minutes.', progress);
+        } else if (status === 'success') {
+          stopPolling();
+          updateProgress('Generation complete!', 100);
+
+          if (task.result && task.result.media_urls && task.result.media_urls.length > 0) {
+            currentVideoUrl = task.result.media_urls[0];
+            showVideoResult(currentVideoUrl);
+            addToHistory(taskId, params, currentVideoUrl, task.duration_s);
+            showToast('Video generated successfully!', 'success');
+            fetchBalance(); // Refresh balance after generation
+          } else {
+            showError('Task succeeded but no video URL was returned.');
+          }
+          return;
+        } else if (status === 'failed') {
+          stopPolling();
+          const failMsg = task.result ? (task.result.message || 'Unknown failure') : 'Generation failed';
+          const failCode = task.result ? task.result.code : '';
+          showError(`Generation failed (${failCode}): ${failMsg}`);
+          showToast('Generation failed.', 'error');
+          return;
+        }
+      } else {
+        // Non-200 response but keep polling
+        console.warn('Polling got non-200:', data);
+      }
+    } catch (e) {
+      console.error('Poll error:', e);
+      // Don't stop polling on network errors, just log
+    }
+
+    pollTimer = setTimeout(poll, POLL_INTERVAL);
+  }
+
+  // First poll after 10 seconds (delayed first poll as recommended)
+  pollTimer = setTimeout(poll, 10000);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearTimeout(pollTimer); pollTimer = null; }
+  if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null; }
+  const btn = document.getElementById('generateBtn');
+  btn.disabled = false;
+  btn.textContent = '⚡ Generate Video';
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return m > 0 ? `${m}m ${s}s` : `${s}s`;
+}
+
+// ══════════════════════════════════════════════════════
+// UI STATE
+// ══════════════════════════════════════════════════════
+function resetOutput() {
+  document.getElementById('outputPlaceholder').style.display = 'none';
+  document.getElementById('progressContainer').classList.remove('active');
+  document.getElementById('videoResult').classList.remove('active');
+  document.getElementById('errorBox').classList.remove('active');
+  document.getElementById('progressBar').style.width = '0%';
+  document.getElementById('taskIdDisplay').textContent = '';
+}
+
+function showProgress(text, percent) {
+  document.getElementById('outputPlaceholder').style.display = 'none';
+  document.getElementById('progressContainer').classList.add('active');
+  document.getElementById('videoResult').classList.remove('active');
+  document.getElementById('errorBox').classList.remove('active');
+  document.getElementById('statusText').textContent = text;
+  if (percent !== undefined) document.getElementById('progressBar').style.width = percent + '%';
+}
+
+function updateProgress(text, percent) {
+  document.getElementById('statusText').textContent = text;
+  if (percent !== undefined) document.getElementById('progressBar').style.width = percent + '%';
+}
+
+function showError(msg) {
+  document.getElementById('progressContainer').classList.remove('active');
+  const box = document.getElementById('errorBox');
+  box.textContent = msg;
+  box.classList.add('active');
+}
+
+function showVideoResult(url) {
+  document.getElementById('progressContainer').classList.remove('active');
+  document.getElementById('errorBox').classList.remove('active');
+  const result = document.getElementById('videoResult');
+  result.classList.add('active');
+  const player = document.getElementById('videoPlayer');
+  player.src = url;
+  player.load();
+}
+
+// ══════════════════════════════════════════════════════
+// VIDEO ACTIONS
+// ══════════════════════════════════════════════════════
+async function downloadVideo() {
+  if (!currentVideoUrl) return;
+  try {
+    showToast('Starting download…', 'info');
+    const res = await fetch(currentVideoUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `grok-video-${Date.now()}.mp4`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Download started!', 'success');
+  } catch (e) {
+    // Fallback: open in new tab
+    window.open(currentVideoUrl, '_blank');
+    showToast('Opening video in new tab (download may require right-click → Save As)', 'info');
+  }
+}
+
+function copyVideoUrl() {
+  if (!currentVideoUrl) return;
+  navigator.clipboard.writeText(currentVideoUrl).then(() => {
+    showToast('Video URL copied to clipboard!', 'success');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = currentVideoUrl;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Video URL copied!', 'success');
+  });
+}
+
+function generateAgain() {
+  resetOutput();
+  document.getElementById('outputPlaceholder').style.display = '';
+  currentVideoUrl = null;
+  currentTaskId = null;
+}
+
+// ══════════════════════════════════════════════════════
+// TEMPLATES
+// ══════════════════════════════════════════════════════
+function saveTemplate() {
+  const prompt = document.getElementById('promptInput').value.trim();
+  if (!prompt) {
+    showToast('Write a prompt first before saving.', 'error');
+    return;
+  }
+  document.getElementById('templateTitleInput').value = '';
+  openModal('saveTemplate');
+  setTimeout(() => document.getElementById('templateTitleInput').focus(), 100);
+}
+
+function confirmSaveTemplate() {
+  const title = document.getElementById('templateTitleInput').value.trim();
+  if (!title) {
+    showToast('Please enter a title for this template.', 'error');
+    return;
+  }
+
+  const template = {
+    id: Date.now().toString(),
+    title: title,
+    prompt: document.getElementById('promptInput').value.trim(),
+    duration: parseInt(document.getElementById('durationSlider').value),
+    resolution: document.getElementById('resolutionSelect').value,
+    aspectRatio: document.getElementById('aspectSelect').value,
+    mode: document.getElementById('modeSelect').value,
+    createdAt: new Date().toISOString()
+  };
+
+  const templates = getTemplates();
+  templates.unshift(template);
+  setTemplates(templates);
+
+  closeModal('saveTemplate');
+  showToast(`Template "${title}" saved!`, 'success');
+}
+
+function loadTemplate(id) {
+  const templates = getTemplates();
+  const t = templates.find(x => x.id === id);
+  if (!t) return;
+
+  document.getElementById('promptInput').value = t.prompt || '';
+  document.getElementById('durationSlider').value = t.duration || 6;
+  document.getElementById('resolutionSelect').value = t.resolution || '480p';
+  document.getElementById('aspectSelect').value = t.aspectRatio || '9:16';
+  document.getElementById('modeSelect').value = t.mode || 'fun';
+  updateDuration();
+  updateCostEstimate();
+
+  closeModal('templates');
+  showToast(`Template "${t.title}" loaded!`, 'success');
+}
+
+function deleteTemplate(id, e) {
+  e.stopPropagation();
+  const templates = getTemplates().filter(x => x.id !== id);
+  setTemplates(templates);
+  renderTemplatesList();
+  showToast('Template deleted.', 'info');
+}
+
+function renderTemplatesList() {
+  const list = document.getElementById('templatesList');
+  const templates = getTemplates();
+  if (templates.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>No saved templates yet.<br>Save a prompt with settings to create one.</p></div>';
+    return;
+  }
+  list.innerHTML = templates.map(t => `
+    <div class="list-item" onclick="loadTemplate('${t.id}')">
+      <div class="item-info">
+        <div class="item-title">${escHtml(t.title)}</div>
+        <div class="item-meta">
+          <span>${t.duration || 6}s</span>
+          <span>${t.resolution || '480p'}</span>
+          <span>${t.aspectRatio || '9:16'}</span>
+          <span>${t.mode || 'fun'}</span>
+        </div>
+        <div class="item-prompt">${escHtml(t.prompt)}</div>
+      </div>
+      <div class="item-actions">
+        <button class="use-btn" title="Use this template" onclick="loadTemplate('${t.id}')">✓</button>
+        <button title="Delete" onclick="deleteTemplate('${t.id}', event)">🗑</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ══════════════════════════════════════════════════════
+// HISTORY
+// ══════════════════════════════════════════════════════
+function addToHistory(taskId, params, videoUrl, durationS) {
+  const entry = {
+    id: Date.now().toString(),
+    taskId: taskId,
+    prompt: params.prompt || '(no prompt)',
+    duration: params.duration,
+    resolution: params.resolution,
+    aspectRatio: params.aspectRatio,
+    mode: params.mode,
+    videoUrl: videoUrl,
+    generationTime: durationS || elapsedSeconds,
+    cost: (params.duration * (PRICING[params.resolution] || 1.6)).toFixed(1),
+    createdAt: new Date().toISOString()
+  };
+  const history = getHistory();
+  history.unshift(entry);
+  // Keep last 50
+  if (history.length > 50) history.length = 50;
+  setHistory(history);
+  updateHistoryBadge();
+}
+
+function updateHistoryBadge() {
+  const badge = document.getElementById('historyBadge');
+  const count = getHistory().length;
+  if (count > 0) {
+    badge.style.display = 'flex';
+    badge.textContent = count;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderHistoryList() {
+  const list = document.getElementById('historyList');
+  const history = getHistory();
+  if (history.length === 0) {
+    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div><p>No generation history yet.<br>Generate a video to see it here.</p></div>';
+    return;
+  }
+  list.innerHTML = history.map(h => {
+    const date = new Date(h.createdAt);
+    const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `
+    <div class="list-item" onclick="playHistoryVideo('${escAttr(h.videoUrl)}')">
+      <div class="item-info">
+        <div class="item-title">${escHtml(h.prompt)}</div>
+        <div class="item-meta">
+          <span>${dateStr}</span>
+          <span>${h.duration}s</span>
+          <span>${h.resolution}</span>
+          <span>${h.mode}</span>
+          <span style="color:var(--warning)">${h.cost} credits</span>
+          <span style="color:var(--text3)">Gen: ${formatTime(h.generationTime || 0)}</span>
+        </div>
+      </div>
+      <div class="item-actions">
+        <button class="use-btn" title="Play this video" onclick="event.stopPropagation();playHistoryVideo('${escAttr(h.videoUrl)}')">▶</button>
+        <button title="Delete" onclick="event.stopPropagation();deleteHistory('${h.id}')">🗑</button>
+      </div>
+    </div>
+  `}).join('');
+}
+
+function playHistoryVideo(url) {
+  closeModal('history');
+  currentVideoUrl = url;
+  resetOutput();
+  showVideoResult(url);
+}
+
+function deleteHistory(id) {
+  const history = getHistory().filter(x => x.id !== id);
+  setHistory(history);
+  renderHistoryList();
+  updateHistoryBadge();
+  showToast('History entry deleted.', 'info');
+}
+
+function clearHistory() {
+  if (!confirm('Clear all generation history? This cannot be undone.')) return;
+  setHistory([]);
+  renderHistoryList();
+  updateHistoryBadge();
+  closeModal('history');
+  showToast('History cleared.', 'info');
+}
+
+// ══════════════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════════════
+function openModal(name) {
+  if (name === 'templates') renderTemplatesList();
+  if (name === 'history') renderHistoryList();
+  document.getElementById(name + 'Modal').classList.add('active');
+}
+
+function closeModal(name) {
+  document.getElementById(name + 'Modal').classList.remove('active');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('active');
+  });
+});
+
+// Close modals on Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+  }
+});
+
+// ══════════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════════
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+function escAttr(str) {
+  return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+updateCostEstimate();
+fetchBalance();
+
+// Boot cloud storage, then update UI
+initCloudStorage().then(() => {
+  updateHistoryBadge();
+}).catch(e => {
+  console.error('Cloud init error:', e);
+  updateHistoryBadge();
+});
+</script>
+</body>
+</html>
