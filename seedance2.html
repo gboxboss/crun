@@ -488,13 +488,29 @@ function getJsonbinKey() { return JSONBIN_KEY; }
 function getSavedBinId() {
   const hash = location.hash.replace('#', '').trim();
   if (hash && hash.length > 10) return hash;
-  try { return localStorage.getItem('seedance2_bin_id') || null; } catch { return null; }
+  try { return localStorage.getItem('grok_bin_id') || null; } catch { return null; }
 }
 function saveBinId(id) {
   cloudBinId = id;
   location.hash = id;
-  try { localStorage.setItem('seedance2_bin_id', id); } catch {}
+  try { localStorage.setItem('grok_bin_id', id); } catch {}
   document.getElementById('syncIdDisplay').textContent = id;
+  syncHashToLinks();
+}
+
+function syncHashToLinks() {
+  const hash = location.hash;
+  if (!hash) return;
+  document.querySelectorAll('.header-actions a.nav-pill').forEach(a => {
+    try {
+      const url = new URL(a.href, location.href);
+      url.hash = hash;
+      a.href = url.pathname + url.search + url.hash;
+    } catch (e) {
+      const base = a.getAttribute('href').split('#')[0];
+      a.setAttribute('href', base + hash);
+    }
+  });
 }
 
 async function cloudCreate(data) {
@@ -573,21 +589,23 @@ async function initCloudStorage() {
   }
 }
 
-function saveToCloud() {
+function saveToCloud(immediate = false) {
   if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
-  syncDebounceTimer = setTimeout(async () => {
+  const performSync = async () => {
     if (!cloudBinId || isSyncing || !getJsonbinKey()) return;
     isSyncing = true;
     try { setSyncStatus('syncing'); await cloudUpdate(cloudBinId, cloudData); setSyncStatus('synced'); }
     catch (e) { console.error('Cloud save failed:', e); setSyncStatus('error'); }
     finally { isSyncing = false; }
-  }, 1500);
+  };
+  if (immediate) performSync();
+  else syncDebounceTimer = setTimeout(performSync, 1500);
 }
 
 function getTemplates() { return cloudData.templates || []; }
-function setTemplates(arr) { cloudData.templates = arr; saveToCloud(); }
+function setTemplates(arr, immediate = false) { cloudData.templates = arr; saveToCloud(immediate); }
 function getHistory() { return cloudData.history || []; }
-function setHistory(arr) { cloudData.history = arr; saveToCloud(); }
+function setHistory(arr, immediate = false) { cloudData.history = arr; saveToCloud(immediate); }
 
 function copySyncId() {
   if (!cloudBinId) { showToast('No Sync ID yet.', 'error'); return; }
@@ -626,7 +644,7 @@ function populateApiKeyInput() { document.getElementById('apiKeyInput').value = 
 function saveApiKey() {
   const val = document.getElementById('apiKeyInput').value.trim();
   if (!val) { showToast('API key cannot be empty.', 'error'); return; }
-  cloudData.apiKey = val; saveToCloud(); fetchBalance(); showToast('API key saved & synced!', 'success');
+  cloudData.apiKey = val; saveToCloud(true); fetchBalance(); showToast('API key saved & synced!', 'success');
 }
 function toggleApiKeyVisibility() {
   const input = document.getElementById('apiKeyInput');
@@ -944,7 +962,7 @@ function confirmSaveTemplate() {
   const template = { id: Date.now().toString(), title, prompt: document.getElementById('promptInput').value.trim(), duration: selectedDuration, model: document.getElementById('modelSelect').value, aspectRatio: document.getElementById('aspectSelect').value, mode: currentMode, createdAt: new Date().toISOString() };
   const templates = getTemplates();
   templates.unshift(template);
-  setTemplates(templates);
+  setTemplates(templates, true);
   closeModal('saveTemplate');
   showToast(`Template "${title}" saved!`, 'success');
 }
@@ -962,7 +980,7 @@ function loadTemplate(id) {
 }
 function deleteTemplate(id, e) {
   e.stopPropagation();
-  setTemplates(getTemplates().filter(x => x.id !== id));
+  setTemplates(getTemplates().filter(x => x.id !== id), true);
   renderTemplatesList();
   showToast('Template deleted.', 'info');
 }
@@ -981,7 +999,7 @@ function addToHistory(taskId, params, videoUrl, durationS) {
   const history = getHistory();
   history.unshift(entry);
   if (history.length > 50) history.length = 50;
-  setHistory(history);
+  setHistory(history, true);
   updateHistoryBadge();
 }
 function updateHistoryBadge() {
@@ -1001,8 +1019,8 @@ function renderHistoryList() {
   }).join('');
 }
 function playHistoryVideo(url) { closeModal('history'); currentVideoUrl = url; resetOutput(); showVideoResult(url); }
-function deleteHistory(id) { setHistory(getHistory().filter(x => x.id !== id)); renderHistoryList(); updateHistoryBadge(); showToast('Deleted.', 'info'); }
-function clearHistory() { if (!confirm('Clear all history?')) return; setHistory([]); renderHistoryList(); updateHistoryBadge(); closeModal('history'); showToast('History cleared.', 'info'); }
+function deleteHistory(id) { setHistory(getHistory().filter(x => x.id !== id), true); renderHistoryList(); updateHistoryBadge(); showToast('Deleted.', 'info'); }
+function clearHistory() { if (!confirm('Clear all history?')) return; setHistory([], true); renderHistoryList(); updateHistoryBadge(); closeModal('history'); showToast('History cleared.', 'info'); }
 
 // ══════════════════════════════════════════════════════
 // MODALS

@@ -540,6 +540,23 @@ function saveBinId(id) {
   location.hash = id;
   try { localStorage.setItem('grok_bin_id', id); } catch {}
   document.getElementById('syncIdDisplay').textContent = id;
+  syncHashToLinks();
+}
+
+// Sync hash to navigation links
+function syncHashToLinks() {
+  const hash = location.hash;
+  if (!hash) return;
+  document.querySelectorAll('.header-actions a.nav-pill').forEach(a => {
+    try {
+      const url = new URL(a.href, location.href);
+      url.hash = hash;
+      a.href = url.pathname + url.search + url.hash;
+    } catch (e) {
+      const base = a.getAttribute('href').split('#')[0];
+      a.setAttribute('href', base + hash);
+    }
+  });
 }
 
 // ── Cloud CRUD ──
@@ -650,10 +667,11 @@ async function initCloudStorage() {
   }
 }
 
-// ── Save to cloud (debounced) ──
-function saveToCloud() {
+// ── Save to cloud ──
+function saveToCloud(immediate = false) {
   if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
-  syncDebounceTimer = setTimeout(async () => {
+  
+  const performSync = async () => {
     if (!cloudBinId || isSyncing || !getJsonbinKey()) return;
     isSyncing = true;
     try {
@@ -666,24 +684,30 @@ function saveToCloud() {
     } finally {
       isSyncing = false;
     }
-  }, 1500);
+  };
+
+  if (immediate) {
+    performSync();
+  } else {
+    syncDebounceTimer = setTimeout(performSync, 1500);
+  }
 }
 
 // ── Getters/Setters that work with cloud data ──
 function getTemplates() {
   return cloudData.templates || [];
 }
-function setTemplates(arr) {
+function setTemplates(arr, immediate = false) {
   cloudData.templates = arr;
-  saveToCloud();
+  saveToCloud(immediate);
 }
 
 function getHistory() {
   return cloudData.history || [];
 }
-function setHistory(arr) {
+function setHistory(arr, immediate = false) {
   cloudData.history = arr;
-  saveToCloud();
+  saveToCloud(immediate);
 }
 
 // ── Sync UI actions ──
@@ -762,7 +786,7 @@ function saveApiKey() {
   const val = document.getElementById('apiKeyInput').value.trim();
   if (!val) { showToast('API key cannot be empty.', 'error'); return; }
   cloudData.apiKey = val;
-  saveToCloud();
+  saveToCloud(true);
   fetchBalance(); // refresh balance with new key
   showToast('API key saved & synced to cloud!', 'success');
 }
@@ -1228,7 +1252,7 @@ function confirmSaveTemplate() {
 
   const templates = getTemplates();
   templates.unshift(template);
-  setTemplates(templates);
+  setTemplates(templates, true);
 
   closeModal('saveTemplate');
   showToast(`Template "${title}" saved!`, 'success');
@@ -1254,7 +1278,7 @@ function loadTemplate(id) {
 function deleteTemplate(id, e) {
   e.stopPropagation();
   const templates = getTemplates().filter(x => x.id !== id);
-  setTemplates(templates);
+  setTemplates(templates, true);
   renderTemplatesList();
   showToast('Template deleted.', 'info');
 }
@@ -1307,7 +1331,7 @@ function addToHistory(taskId, params, videoUrl, durationS) {
   history.unshift(entry);
   // Keep last 50
   if (history.length > 50) history.length = 50;
-  setHistory(history);
+  setHistory(history, true);
   updateHistoryBadge();
 }
 
@@ -1362,7 +1386,7 @@ function playHistoryVideo(url) {
 
 function deleteHistory(id) {
   const history = getHistory().filter(x => x.id !== id);
-  setHistory(history);
+  setHistory(history, true);
   renderHistoryList();
   updateHistoryBadge();
   showToast('History entry deleted.', 'info');
@@ -1370,7 +1394,7 @@ function deleteHistory(id) {
 
 function clearHistory() {
   if (!confirm('Clear all generation history? This cannot be undone.')) return;
-  setHistory([]);
+  setHistory([], true);
   renderHistoryList();
   updateHistoryBadge();
   closeModal('history');
