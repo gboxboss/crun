@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Grok Imagine — Video Generator</title>
-<meta name="description" content="Generate stunning AI videos with Grok Imagine via Crun.ai API">
+<title>Sora 2 — AI Video Generator</title>
+<meta name="description" content="Generate stunning AI videos with Sora 2 via Crun.ai API">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -14,35 +14,39 @@
   --surface:#16162a;--surface2:#1e1e36;--surface3:#262642;
   --border:#2a2a4a;--border2:#3a3a5a;
   --text:#e8e8f0;--text2:#a8a8c0;--text3:#6868a0;
-  --accent:#7c5cfc;--accent2:#9b7cff;--accent3:#b99cff;
+  --accent:#3b82f6;--accent2:#60a5fa;--accent3:#93c5fd;
   --success:#22c55e;--warning:#f59e0b;--error:#ef4444;
   --glass:rgba(22,22,42,0.7);
-  --gradient:linear-gradient(135deg,#7c5cfc 0%,#c084fc 50%,#f472b6 100%);
-  --gradient2:linear-gradient(135deg,#1e1e36 0%,#2a1a4a 100%);
+  --gradient:linear-gradient(135deg,#3b82f6 0%,#8b5cf6 50%,#a78bfa 100%);
+  --gradient2:linear-gradient(135deg,#1e1e36 0%,#1a2a4a 100%);
   --shadow:0 8px 32px rgba(0,0,0,0.4);
-  --shadow2:0 4px 16px rgba(124,92,252,0.15);
+  --shadow2:0 4px 16px rgba(59,130,246,0.15);
   --radius:12px;--radius2:16px;--radius3:20px;
 }
 html{font-family:'Inter',system-ui,sans-serif;font-size:14px;color:var(--text);background:var(--bg);scroll-behavior:smooth}
 body{min-height:100vh;background:var(--bg)}
-body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 0%,rgba(124,92,252,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(244,114,182,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
+body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 0%,rgba(59,130,246,0.08) 0%,transparent 50%),radial-gradient(ellipse at 80% 100%,rgba(139,92,246,0.06) 0%,transparent 50%);pointer-events:none;z-index:0}
 
-/* Scrollbar */
 ::-webkit-scrollbar{width:6px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 ::-webkit-scrollbar-thumb:hover{background:var(--border2)}
 
-/* Layout */
 .app{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:24px 20px 60px}
 
-/* Header */
 .header{display:flex;align-items:center;justify-content:space-between;padding:16px 0;margin-bottom:32px;border-bottom:1px solid var(--border)}
 .logo{display:flex;align-items:center;gap:12px}
-.logo-icon{width:40px;height:40px;border-radius:12px;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:#fff;box-shadow:var(--shadow2)}
+.logo-icon{width:40px;height:40px;border-radius:12px;background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;box-shadow:var(--shadow2)}
 .logo h1{font-size:20px;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .logo span{font-size:12px;color:var(--text3);font-weight:400;display:block;margin-top:2px}
 .header-actions{display:flex;align-items:center;gap:12px}
+
+.nav-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;font-size:12px;font-weight:600;color:#fff;text-decoration:none;transition:all .3s;letter-spacing:.3px;border:1px solid transparent;cursor:pointer}
+.nav-pill.grok{background:linear-gradient(135deg,#7c5cfc,#c084fc);border-color:rgba(192,132,252,0.3)}
+.nav-pill.grok:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(124,92,252,0.35)}
+.nav-pill.seedance{background:linear-gradient(135deg,#06b6d4,#10b981);border-color:rgba(16,185,129,0.3)}
+.nav-pill.seedance:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(6,182,212,0.35)}
+
 .balance-pill{display:flex;align-items:center;gap:8px;padding:8px 16px;background:var(--surface);border:1px solid var(--border);border-radius:100px;font-size:13px;color:var(--text2);cursor:pointer;transition:all .2s}
 .balance-pill:hover{border-color:var(--accent);background:var(--surface2)}
 .balance-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulse 2s infinite}
@@ -53,79 +57,74 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .icon-btn:hover{background:var(--surface2);border-color:var(--accent);color:var(--accent2);transform:translateY(-1px)}
 .icon-btn .badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:var(--accent);color:#fff;font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;padding:0 4px}
 
-/* Main Grid */
 .main{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 @media(max-width:900px){.main{grid-template-columns:1fr}}
 
-/* Cards */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius2);overflow:hidden}
 .card-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
 .card-header h2{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
 .card-header h2 .emoji{font-size:18px}
 .card-body{padding:20px}
 
-/* Form Controls */
 .form-group{margin-bottom:16px}
 .form-group:last-child{margin-bottom:0}
 .form-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
 .form-label .hint{font-weight:400;color:var(--text3);text-transform:none;letter-spacing:0}
 
 .form-input,.form-select,.form-textarea{width:100%;padding:10px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:inherit;font-size:13px;transition:all .2s;outline:none}
-.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(124,92,252,0.15)}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(59,130,246,0.15)}
 .form-input::placeholder,.form-textarea::placeholder{color:var(--text3)}
 .form-select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236868a0' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center}
 .form-select option{background:var(--bg2);color:var(--text)}
 .form-textarea{resize:vertical;min-height:100px;line-height:1.6}
 
-/* Image Upload */
-.upload-zone{position:relative;border:2px dashed var(--border);border-radius:var(--radius2);padding:32px;text-align:center;cursor:pointer;transition:all .3s;background:var(--bg2);min-height:200px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
-.upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:rgba(124,92,252,0.05)}
+/* Mode Toggle */
+.mode-toggle{display:flex;gap:4px;padding:4px;background:var(--bg2);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:16px}
+.mode-toggle button{flex:1;padding:8px 12px;border:none;border-radius:8px;background:transparent;color:var(--text3);font-family:inherit;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.mode-toggle button.active{background:var(--accent);color:#fff;box-shadow:0 2px 8px rgba(59,130,246,0.3)}
+.mode-toggle button:hover:not(.active){color:var(--text2);background:var(--surface)}
+
+.upload-zone{position:relative;border:2px dashed var(--border);border-radius:var(--radius2);padding:32px;text-align:center;cursor:pointer;transition:all .3s;background:var(--bg2);min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--accent);background:rgba(59,130,246,0.05)}
 .upload-zone .upload-icon{font-size:40px;opacity:.6}
 .upload-zone .upload-text{font-size:14px;color:var(--text2);font-weight:500}
 .upload-zone .upload-hint{font-size:12px;color:var(--text3)}
 .upload-zone input{display:none}
 .upload-zone.has-image{padding:8px;border-style:solid}
-.upload-zone.has-image img{max-width:100%;max-height:280px;border-radius:8px;object-fit:contain}
+.upload-zone.has-image img{max-width:100%;max-height:250px;border-radius:8px;object-fit:contain}
 .upload-zone .remove-img{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.7);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .2s;z-index:2}
 .upload-zone .remove-img:hover{background:var(--error)}
 
-/* Prompt Box */
 .prompt-wrap{position:relative}
 .prompt-wrap .prompt-actions{position:absolute;bottom:8px;right:8px;display:flex;gap:6px}
 .prompt-wrap .prompt-actions button{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:4px}
 .prompt-wrap .prompt-actions button:hover{border-color:var(--accent);color:var(--accent2)}
 
-/* Settings Row */
 .settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .settings-grid.three{grid-template-columns:1fr 1fr 1fr}
 
-/* Duration Slider */
-.slider-wrap{display:flex;align-items:center;gap:12px}
-.slider-wrap input[type=range]{flex:1;-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;background:var(--bg);outline:none}
-.slider-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 0 8px rgba(124,92,252,0.4);transition:all .2s}
-.slider-wrap input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.2)}
-.slider-val{min-width:36px;text-align:center;font-weight:600;color:var(--accent2);font-size:14px}
+/* Duration Buttons */
+.duration-btns{display:flex;gap:6px}
+.duration-btns button{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text2);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.duration-btns button.active{background:var(--accent);color:#fff;border-color:var(--accent);box-shadow:0 2px 8px rgba(59,130,246,0.3)}
+.duration-btns button:hover:not(.active){border-color:var(--accent);color:var(--accent2)}
 
-/* Cost Estimate */
 .cost-bar{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--gradient2);border:1px solid var(--border);border-radius:var(--radius);margin-top:16px}
 .cost-bar .cost-label{font-size:12px;color:var(--text3)}
 .cost-bar .cost-value{font-size:15px;font-weight:700;color:var(--warning)}
 
-/* Generate Button */
 .btn-generate{width:100%;padding:14px;border:none;border-radius:var(--radius);background:var(--gradient);color:#fff;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .3s;margin-top:16px;position:relative;overflow:hidden;letter-spacing:.3px}
-.btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(124,92,252,0.35)}
+.btn-generate:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 24px rgba(59,130,246,0.35)}
 .btn-generate:disabled{opacity:.5;cursor:not-allowed;transform:none}
 .btn-generate::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);transition:left .6s}
 .btn-generate:hover:not(:disabled)::after{left:100%}
 
-/* Output Area */
 .output-area{display:flex;flex-direction:column;gap:16px}
 .output-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;text-align:center;gap:16px;color:var(--text3);padding:40px}
 .output-placeholder .ph-icon{font-size:60px;opacity:.3}
 .output-placeholder .ph-text{font-size:15px;font-weight:500}
 .output-placeholder .ph-hint{font-size:12px;opacity:.6}
 
-/* Progress */
 .progress-container{display:none;flex-direction:column;gap:16px;padding:20px}
 .progress-container.active{display:flex}
 .progress-bar-wrap{height:6px;background:var(--bg);border-radius:3px;overflow:hidden}
@@ -136,7 +135,6 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 @keyframes spin{to{transform:rotate(360deg)}}
 .progress-status .elapsed{color:var(--text3)}
 
-/* Video Result */
 .video-result{display:none;flex-direction:column;gap:12px}
 .video-result.active{display:flex}
 .video-result video{width:100%;border-radius:var(--radius);background:#000;max-height:450px}
@@ -146,11 +144,9 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .video-actions .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .video-actions .btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
 
-/* Error */
 .error-box{display:none;padding:16px;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:var(--radius);color:var(--error);font-size:13px;line-height:1.5}
 .error-box.active{display:block}
 
-/* Modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
 .modal-overlay.active{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius3);width:100%;max-width:560px;max-height:80vh;display:flex;flex-direction:column;box-shadow:var(--shadow);animation:modalIn .25s ease}
@@ -166,7 +162,6 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .modal-footer .btn-save{background:var(--accent);border-color:var(--accent);color:#fff}
 .modal-footer .btn-save:hover{background:var(--accent2)}
 
-/* Template/History Item */
 .list-item{padding:12px 14px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;cursor:pointer;transition:all .2s;display:flex;align-items:flex-start;gap:12px}
 .list-item:hover{border-color:var(--accent);background:var(--surface2)}
 .list-item:last-child{margin-bottom:0}
@@ -178,20 +173,17 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .list-item .item-actions button{width:28px;height:28px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .2s}
 .list-item .item-actions button:hover{border-color:var(--error);color:var(--error);background:rgba(239,68,68,0.1)}
 .list-item .item-actions .use-btn:hover{border-color:var(--success);color:var(--success);background:rgba(34,197,94,0.1)}
-.list-item .item-thumb{width:60px;height:45px;border-radius:6px;object-fit:cover;background:var(--bg);flex-shrink:0}
 
 .empty-state{text-align:center;padding:32px;color:var(--text3)}
 .empty-state .empty-icon{font-size:40px;margin-bottom:8px;opacity:.3}
 .empty-state p{font-size:13px}
 
-/* Toast */
 .toast-container{position:fixed;bottom:24px;right:24px;z-index:200;display:flex;flex-direction:column;gap:8px}
 .toast{padding:12px 20px;border-radius:10px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:13px;box-shadow:var(--shadow);animation:toastIn .3s ease;display:flex;align-items:center;gap:8px;max-width:360px}
 .toast.success{border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.1)}
 .toast.error{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.1)}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 
-/* Sync status */
 .sync-indicator{font-size:10px;padding:3px 8px;border-radius:6px;font-weight:600;letter-spacing:.3px}
 .sync-indicator.synced{color:var(--success);background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2)}
 .sync-indicator.syncing{color:var(--warning);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2)}
@@ -200,14 +192,6 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 .sync-id-box button{flex-shrink:0;padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:11px;cursor:pointer;transition:all .2s}
 .sync-id-box button:hover{border-color:var(--accent);color:var(--accent2)}
 
-/* Nav Pills */
-.nav-pill{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:100px;font-size:12px;font-weight:600;color:#fff;text-decoration:none;transition:all .3s;letter-spacing:.3px;border:1px solid transparent;cursor:pointer}
-.nav-pill.sora{background:linear-gradient(135deg,#3b82f6,#8b5cf6);border-color:rgba(139,92,246,0.3)}
-.nav-pill.sora:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(59,130,246,0.35);border-color:rgba(139,92,246,0.5)}
-.nav-pill.seedance{background:linear-gradient(135deg,#06b6d4,#10b981);border-color:rgba(16,185,129,0.3)}
-.nav-pill.seedance:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(6,182,212,0.35);border-color:rgba(16,185,129,0.5)}
-
-/* Responsive */
 @media(max-width:600px){
   .app{padding:12px 12px 40px}
   .header{flex-direction:column;gap:12px;align-items:flex-start}
@@ -218,18 +202,17 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
 <body>
 
 <div class="app">
-  <!-- Header -->
   <header class="header">
     <div class="logo">
-      <div class="logo-icon">G</div>
+      <div class="logo-icon">S2</div>
       <div>
-        <h1>Grok Imagine</h1>
-        <span>Image-to-Video Generation · Powered by Crun.ai</span>
+        <h1>Sora 2</h1>
+        <span>AI Video Generation · Powered by Crun.ai</span>
       </div>
     </div>
     <div class="header-actions">
-      <a href="./sora2.html" class="nav-pill sora" title="Open Sora 2 Video Generator">🌀 Sora 2</a>
-      <a href="./seedance2.html" class="nav-pill seedance" title="Open Seedance 2 Video Generator">🌿 Seedance 2</a>
+      <a href="./index.html" class="nav-pill grok" title="Grok Imagine">🎨 Grok Imagine</a>
+      <a href="./seedance2.html" class="nav-pill seedance" title="Seedance 2">🌿 Seedance 2</a>
       <div class="balance-pill" id="balancePill" onclick="fetchBalance()" title="Click to refresh">
         <div class="dot"></div>
         <span>Credits:</span>
@@ -246,22 +229,36 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
     </div>
   </header>
 
-  <!-- Main -->
   <div class="main">
     <!-- Left: Controls -->
     <div>
       <div class="card">
         <div class="card-header">
-          <h2><span class="emoji">🖼️</span> Image Input</h2>
+          <h2><span class="emoji">🌀</span> Generation Settings</h2>
         </div>
         <div class="card-body">
-          <!-- Upload -->
+          <!-- Mode Toggle -->
+          <div class="mode-toggle">
+            <button class="active" onclick="setMode('t2v')">📝 Text to Video</button>
+            <button onclick="setMode('i2v')">🖼️ Image-Guided</button>
+          </div>
+
+          <!-- Model Tier -->
           <div class="form-group">
+            <label class="form-label">Model Tier</label>
+            <select class="form-select" id="modelSelect">
+              <option value="openai/sora2" selected>⚡ Sora 2 — Fast</option>
+              <option value="openai/sora2-pro">💎 Sora 2 Pro — Quality</option>
+            </select>
+          </div>
+
+          <!-- Upload (hidden by default) -->
+          <div class="form-group" id="uploadGroup" style="display:none">
             <div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
               <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
               <div class="upload-icon">🎞️</div>
-              <div class="upload-text">Drop image here or click to upload</div>
-              <div class="upload-hint">Supports JPG, PNG, WEBP · Max 10MB</div>
+              <div class="upload-text">Drop reference image or click to upload</div>
+              <div class="upload-hint">Optional reference image · Max 10MB</div>
             </div>
           </div>
 
@@ -269,10 +266,10 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
           <div class="form-group">
             <label class="form-label">
               Prompt
-              <span class="hint">Optional · Max 5000 chars</span>
+              <span class="hint">Required · Max 10,000 chars</span>
             </label>
             <div class="prompt-wrap">
-              <textarea class="form-textarea" id="promptInput" placeholder="Describe the motion and animation you want…&#10;e.g. &quot;Animate the scene with gentle camera motion and soft lighting.&quot;" rows="4"></textarea>
+              <textarea class="form-textarea" id="promptInput" placeholder="Describe the video you want to create…&#10;e.g. &quot;A cinematic tracking shot of a robot walking through a rainy cyberpunk city at night.&quot;" rows="4" maxlength="10000"></textarea>
               <div class="prompt-actions">
                 <button onclick="saveTemplate()" title="Save as template">💾 Save</button>
                 <button onclick="openModal('templates')" title="Load saved template">📂 Load</button>
@@ -280,49 +277,29 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
             </div>
           </div>
 
-          <!-- Settings -->
+          <!-- Duration -->
           <div class="form-group">
             <label class="form-label">Duration</label>
-            <div class="slider-wrap">
-              <input type="range" id="durationSlider" min="6" max="30" value="6" oninput="updateDuration()">
-              <span class="slider-val" id="durationVal">6s</span>
+            <div class="duration-btns" id="durationBtns">
+              <button class="active" onclick="setDuration(4)">4s</button>
+              <button onclick="setDuration(8)">8s</button>
+              <button onclick="setDuration(12)">12s</button>
             </div>
           </div>
 
-          <div class="settings-grid three">
-            <div class="form-group">
-              <label class="form-label">Resolution</label>
-              <select class="form-select" id="resolutionSelect">
-                <option value="480p" selected>480p</option>
-                <option value="720p">720p</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Aspect Ratio</label>
-              <select class="form-select" id="aspectSelect">
-                <option value="9:16" selected>9:16</option>
-                <option value="16:9">16:9</option>
-                <option value="1:1">1:1</option>
-                <option value="2:3">2:3</option>
-                <option value="3:2">3:2</option>
-              </select>
-              <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">Multi-image only. Single image uses its own ratio.</span>
-            </div>
-            <div class="form-group">
-              <label class="form-label">Mode</label>
-              <select class="form-select" id="modeSelect">
-                <option value="fun" selected>🎭 Fun</option>
-                <option value="normal">⚖️ Normal</option>
-                <option value="spicy">🔥 Spicy*</option>
-              </select>
-              <span style="font-size:10px;color:var(--text3);margin-top:3px;display:block">*Spicy requires task_id from a Grok t2i/i2i task.</span>
-            </div>
+          <!-- Aspect Ratio -->
+          <div class="form-group">
+            <label class="form-label">Aspect Ratio</label>
+            <select class="form-select" id="aspectSelect">
+              <option value="16:9" selected>16:9 Landscape</option>
+              <option value="9:16">9:16 Portrait</option>
+            </select>
           </div>
 
           <!-- Cost -->
           <div class="cost-bar">
             <span class="cost-label">Estimated Cost</span>
-            <span class="cost-value" id="costEstimate">≈ 9.6 credits</span>
+            <span class="cost-value" id="costEstimate">—</span>
           </div>
 
           <!-- Generate -->
@@ -341,14 +318,11 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
           <span id="taskIdDisplay" style="font-size:11px;color:var(--text3)"></span>
         </div>
         <div class="card-body output-area">
-          <!-- Placeholder -->
           <div class="output-placeholder" id="outputPlaceholder">
-            <div class="ph-icon">🎥</div>
+            <div class="ph-icon">🌀</div>
             <div class="ph-text">Your generated video will appear here</div>
-            <div class="ph-hint">Upload an image and hit Generate to start</div>
+            <div class="ph-hint">Write a prompt and hit Generate to start</div>
           </div>
-
-          <!-- Progress -->
           <div class="progress-container" id="progressContainer">
             <div class="progress-status">
               <div class="status-text">
@@ -361,11 +335,7 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
               <div class="progress-bar" id="progressBar"></div>
             </div>
           </div>
-
-          <!-- Error -->
           <div class="error-box" id="errorBox"></div>
-
-          <!-- Video Result -->
           <div class="video-result" id="videoResult">
             <video id="videoPlayer" controls playsinline></video>
             <div class="video-actions">
@@ -415,10 +385,10 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
     <div class="modal-body">
       <div class="form-group">
         <label class="form-label">Template Title</label>
-        <input class="form-input" id="templateTitleInput" placeholder="e.g. Cinematic pan shot…" autofocus>
+        <input class="form-input" id="templateTitleInput" placeholder="e.g. Cinematic cyberpunk scene…" autofocus>
       </div>
       <div style="font-size:12px;color:var(--text3);margin-top:8px;line-height:1.5">
-        This will save your current prompt and all settings (duration, resolution, aspect ratio, mode).
+        This will save your current prompt and all settings.
       </div>
     </div>
     <div class="modal-footer">
@@ -436,10 +406,6 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
       <button class="modal-close" onclick="closeModal('cloudSync')">✕</button>
     </div>
     <div class="modal-body">
-
-      <div>
-
-      <!-- Crun.ai API Key -->
       <div class="form-group">
         <label class="form-label">Crun.ai API Key <span class="hint">Synced to cloud</span></label>
         <div style="display:flex;gap:8px">
@@ -451,23 +417,18 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
         </div>
         <span style="font-size:10px;color:var(--text3);margin-top:4px;display:block">Get one at <a href="https://crun.ai/user-api-key" target="_blank" style="color:var(--accent2)">crun.ai/user-api-key</a></span>
       </div>
-
-      </div>
-
       <div style="margin:16px 0;border-top:1px solid var(--border);padding-top:16px">
         <p style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:12px">
           Your templates, history, and Crun.ai key are stored in the cloud via <strong>JSONBin.io</strong>.
-          Copy the Sync ID below and paste it on another browser (with your JSONBin key) to access the same data.
         </p>
         <div class="form-group">
-          <label class="form-label">Your Sync ID <span class="hint">This is your JSONBin Bin ID</span></label>
+          <label class="form-label">Your Sync ID <span class="hint">JSONBin Bin ID</span></label>
           <div class="sync-id-box">
             <span id="syncIdDisplay" style="flex:1">Not connected</span>
             <button onclick="copySyncId()">📋 Copy</button>
           </div>
         </div>
       </div>
-
       <div style="margin:16px 0;border-top:1px solid var(--border);padding-top:16px">
         <div class="form-group">
           <label class="form-label">Load from another Sync ID</label>
@@ -477,7 +438,6 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
           </div>
         </div>
       </div>
-
       <div style="margin-top:12px">
         <button onclick="forceCloudSync()" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">🔄 Force Sync Now</button>
       </div>
@@ -485,7 +445,6 @@ body::before{content:'';position:fixed;top:0;left:0;right:0;bottom:0;background:
   </div>
 </div>
 
-<!-- Toast Container -->
 <div class="toast-container" id="toastContainer"></div>
 
 <script>
@@ -500,15 +459,14 @@ const API_BASE = 'https://api.crun.ai';
 const CREATE_TASK_URL = `${API_BASE}/api/v1/client/job/CreateTask`;
 const TASK_INFO_URL = `${API_BASE}/api/v1/client/job/TaskInfo`;
 const BALANCE_URL = `${API_BASE}/api/v1/client/account/balance`;
-const POLL_INTERVAL = 15000; // 15 seconds as per docs recommendation
-const MAX_POLL_TIME = 20 * 60 * 1000; // 20 minutes max
-
-// Pricing: credits per second
-const PRICING = { '480p': 1.6, '720p': 3.0 };
+const POLL_INTERVAL = 15000;
+const MAX_POLL_TIME = 20 * 60 * 1000;
 
 // ══════════════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════════════
+let currentMode = 't2v'; // t2v or i2v
+let selectedDuration = 4;
 let uploadedImageDataUrl = null;
 let currentTaskId = null;
 let pollTimer = null;
@@ -517,49 +475,37 @@ let elapsedSeconds = 0;
 let currentVideoUrl = null;
 
 // ══════════════════════════════════════════════════════
-// CLOUD STORAGE — JSONBin.io (free signup, returns ID in body)
+// CLOUD STORAGE
 // ══════════════════════════════════════════════════════
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b';
 let cloudBinId = null;
 let cloudData = { templates: [], history: [], apiKey: '' };
 let syncDebounceTimer = null;
 let isSyncing = false;
-
-// ── JSONBin master key (hardcoded for personal use) ──
 const JSONBIN_KEY = '$2a$10$6CN0CEfmiBDjNeSUSPifDO8isPmgx/NC748XbpH6ogTFOm4UyhcbG';
 function getJsonbinKey() { return JSONBIN_KEY; }
 
-// ── Bin ID from URL hash or localStorage ──
 function getSavedBinId() {
   const hash = location.hash.replace('#', '').trim();
   if (hash && hash.length > 10) return hash;
-  try { return localStorage.getItem('grok_bin_id') || null; } catch { return null; }
+  try { return localStorage.getItem('sora2_bin_id') || null; } catch { return null; }
 }
 function saveBinId(id) {
   cloudBinId = id;
   location.hash = id;
-  try { localStorage.setItem('grok_bin_id', id); } catch {}
+  try { localStorage.setItem('sora2_bin_id', id); } catch {}
   document.getElementById('syncIdDisplay').textContent = id;
 }
 
-// ── Cloud CRUD ──
 async function cloudCreate(data) {
   const key = getJsonbinKey();
   if (!key) throw new Error('NO_KEY');
   const res = await fetch(JSONBIN_BASE, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': key,
-      'X-Bin-Private': 'false',
-      'X-Bin-Name': 'GrokImagine'
-    },
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': key, 'X-Bin-Private': 'false', 'X-Bin-Name': 'Sora2Video' },
     body: JSON.stringify(data)
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `HTTP ${res.status}`);
-  }
+  if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `HTTP ${res.status}`); }
   const json = await res.json();
   const id = json.metadata && json.metadata.id;
   if (!id) throw new Error('No bin ID in response');
@@ -569,15 +515,9 @@ async function cloudCreate(data) {
 async function cloudRead(binId) {
   const key = getJsonbinKey();
   if (!key) throw new Error('NO_KEY');
-  const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`, {
-    method: 'GET',
-    headers: { 'X-Master-Key': key }
-  });
+  const res = await fetch(`${JSONBIN_BASE}/${binId}/latest`, { method: 'GET', headers: { 'X-Master-Key': key } });
   if (res.status === 404) return null;
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `HTTP ${res.status}`);
-  }
+  if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `HTTP ${res.status}`); }
   const json = await res.json();
   return json.record || json;
 }
@@ -587,19 +527,12 @@ async function cloudUpdate(binId, data) {
   if (!key) return;
   const res = await fetch(`${JSONBIN_BASE}/${binId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Master-Key': key
-    },
+    headers: { 'Content-Type': 'application/json', 'X-Master-Key': key },
     body: JSON.stringify(data)
   });
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `HTTP ${res.status}`);
-  }
+  if (!res.ok) { const err = await res.json().catch(() => ({})); throw new Error(err.message || `HTTP ${res.status}`); }
 }
 
-// ── Sync status indicator ──
 function setSyncStatus(state, text) {
   const el = document.getElementById('syncStatus');
   el.style.display = 'inline-block';
@@ -608,32 +541,22 @@ function setSyncStatus(state, text) {
   if (state === 'synced') setTimeout(() => { el.style.display = 'none'; }, 3000);
 }
 
-// ── Initialize cloud storage ──
 async function initCloudStorage() {
   const existingId = getSavedBinId();
-
   if (existingId) {
     try {
       setSyncStatus('syncing');
       const data = await cloudRead(existingId);
       if (data && typeof data === 'object') {
-        cloudData = {
-          templates: Array.isArray(data.templates) ? data.templates : [],
-          history: Array.isArray(data.history) ? data.history : [],
-          apiKey: data.apiKey || ''
-        };
+        cloudData = { templates: Array.isArray(data.templates) ? data.templates : [], history: Array.isArray(data.history) ? data.history : [], apiKey: data.apiKey || '' };
         saveBinId(existingId);
         setSyncStatus('synced');
         updateHistoryBadge();
         populateApiKeyInput();
         return;
       }
-    } catch (e) {
-      console.warn('Failed to load existing bin:', e);
-    }
+    } catch (e) { console.warn('Failed to load existing bin:', e); }
   }
-
-  // Create a new bin
   try {
     setSyncStatus('syncing', 'Creating…');
     const initData = { templates: [], history: [], apiKey: DEFAULT_API_KEY };
@@ -642,7 +565,7 @@ async function initCloudStorage() {
     cloudData = initData;
     setSyncStatus('synced');
     populateApiKeyInput();
-    showToast('Cloud storage connected! Sync ID: ' + id.substring(0, 8) + '…', 'success');
+    showToast('Cloud storage connected!', 'success');
   } catch (e) {
     console.error('Cloud storage init failed:', e);
     setSyncStatus('error');
@@ -650,133 +573,66 @@ async function initCloudStorage() {
   }
 }
 
-// ── Save to cloud (debounced) ──
 function saveToCloud() {
   if (syncDebounceTimer) clearTimeout(syncDebounceTimer);
   syncDebounceTimer = setTimeout(async () => {
     if (!cloudBinId || isSyncing || !getJsonbinKey()) return;
     isSyncing = true;
-    try {
-      setSyncStatus('syncing');
-      await cloudUpdate(cloudBinId, cloudData);
-      setSyncStatus('synced');
-    } catch (e) {
-      console.error('Cloud save failed:', e);
-      setSyncStatus('error');
-    } finally {
-      isSyncing = false;
-    }
+    try { setSyncStatus('syncing'); await cloudUpdate(cloudBinId, cloudData); setSyncStatus('synced'); }
+    catch (e) { console.error('Cloud save failed:', e); setSyncStatus('error'); }
+    finally { isSyncing = false; }
   }, 1500);
 }
 
-// ── Getters/Setters that work with cloud data ──
-function getTemplates() {
-  return cloudData.templates || [];
-}
-function setTemplates(arr) {
-  cloudData.templates = arr;
-  saveToCloud();
-}
+function getTemplates() { return cloudData.templates || []; }
+function setTemplates(arr) { cloudData.templates = arr; saveToCloud(); }
+function getHistory() { return cloudData.history || []; }
+function setHistory(arr) { cloudData.history = arr; saveToCloud(); }
 
-function getHistory() {
-  return cloudData.history || [];
-}
-function setHistory(arr) {
-  cloudData.history = arr;
-  saveToCloud();
-}
-
-// ── Sync UI actions ──
 function copySyncId() {
-  if (!cloudBinId) { showToast('No Sync ID yet. Set up JSONBin key first.', 'error'); return; }
-  navigator.clipboard.writeText(cloudBinId).then(() => {
-    showToast('Sync ID copied!', 'success');
-  }).catch(() => {
-    const ta = document.createElement('textarea');
-    ta.value = cloudBinId;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('Sync ID copied!', 'success');
+  if (!cloudBinId) { showToast('No Sync ID yet.', 'error'); return; }
+  navigator.clipboard.writeText(cloudBinId).then(() => showToast('Sync ID copied!', 'success')).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = cloudBinId; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('Sync ID copied!', 'success');
   });
 }
 
 async function importSyncId() {
   const id = document.getElementById('importSyncIdInput').value.trim();
   if (!id || id.length < 10) { showToast('Please paste a valid Bin ID.', 'error'); return; }
-  if (!getJsonbinKey()) { showToast('Enter your JSONBin key first.', 'error'); return; }
   try {
     setSyncStatus('syncing', 'Loading…');
     const data = await cloudRead(id);
-    if (!data || typeof data !== 'object') {
-      throw new Error('Invalid or expired Bin ID.');
-    }
-    cloudData = {
-      templates: Array.isArray(data.templates) ? data.templates : [],
-      history: Array.isArray(data.history) ? data.history : [],
-      apiKey: data.apiKey || ''
-    };
-    saveBinId(id);
-    setSyncStatus('synced');
-    updateHistoryBadge();
-    populateApiKeyInput();
-    closeModal('cloudSync');
+    if (!data || typeof data !== 'object') throw new Error('Invalid Bin ID.');
+    cloudData = { templates: Array.isArray(data.templates) ? data.templates : [], history: Array.isArray(data.history) ? data.history : [], apiKey: data.apiKey || '' };
+    saveBinId(id); setSyncStatus('synced'); updateHistoryBadge(); populateApiKeyInput(); closeModal('cloudSync');
     showToast(`Loaded ${cloudData.templates.length} templates and ${cloudData.history.length} history items!`, 'success');
-  } catch (e) {
-    setSyncStatus('error');
-    showToast('Failed to load: ' + e.message, 'error');
-  }
+  } catch (e) { setSyncStatus('error'); showToast('Failed to load: ' + e.message, 'error'); }
 }
 
 async function forceCloudSync() {
   if (!cloudBinId) { showToast('No Sync ID yet.', 'error'); return; }
-  if (!getJsonbinKey()) { showToast('Enter your JSONBin key first.', 'error'); return; }
   try {
     setSyncStatus('syncing');
     const data = await cloudRead(cloudBinId);
     if (data && typeof data === 'object') {
-      cloudData = {
-        templates: Array.isArray(data.templates) ? data.templates : [],
-        history: Array.isArray(data.history) ? data.history : [],
-        apiKey: data.apiKey || ''
-      };
-      updateHistoryBadge();
-      populateApiKeyInput();
+      cloudData = { templates: Array.isArray(data.templates) ? data.templates : [], history: Array.isArray(data.history) ? data.history : [], apiKey: data.apiKey || '' };
+      updateHistoryBadge(); populateApiKeyInput();
     }
-    setSyncStatus('synced');
-    showToast('Synced with cloud!', 'success');
-  } catch (e) {
-    setSyncStatus('error');
-    showToast('Sync failed: ' + e.message, 'error');
-  }
+    setSyncStatus('synced'); showToast('Synced with cloud!', 'success');
+  } catch (e) { setSyncStatus('error'); showToast('Sync failed: ' + e.message, 'error'); }
 }
 
-// ── API Key management ──
-function populateApiKeyInput() {
-  const input = document.getElementById('apiKeyInput');
-  input.value = getApiKey();
-}
-
+function populateApiKeyInput() { document.getElementById('apiKeyInput').value = getApiKey(); }
 function saveApiKey() {
   const val = document.getElementById('apiKeyInput').value.trim();
   if (!val) { showToast('API key cannot be empty.', 'error'); return; }
-  cloudData.apiKey = val;
-  saveToCloud();
-  fetchBalance(); // refresh balance with new key
-  showToast('API key saved & synced to cloud!', 'success');
+  cloudData.apiKey = val; saveToCloud(); fetchBalance(); showToast('API key saved & synced!', 'success');
 }
-
 function toggleApiKeyVisibility() {
   const input = document.getElementById('apiKeyInput');
   const btn = document.getElementById('apiKeyToggle');
-  if (input.type === 'password') {
-    input.type = 'text';
-    btn.textContent = '🙈';
-  } else {
-    input.type = 'password';
-    btn.textContent = '👁';
-  }
+  if (input.type === 'password') { input.type = 'text'; btn.textContent = '🙈'; }
+  else { input.type = 'password'; btn.textContent = '👁'; }
 }
 
 // ══════════════════════════════════════════════════════
@@ -799,44 +655,38 @@ async function fetchBalance() {
   const el = document.getElementById('balanceValue');
   el.textContent = '…';
   try {
-    const res = await fetch(BALANCE_URL, {
-      method: 'GET',
-      headers: { 'x-api-key': getApiKey(), 'Content-Type': 'application/json' }
-    });
+    const res = await fetch(BALANCE_URL, { method: 'GET', headers: { 'x-api-key': getApiKey(), 'Content-Type': 'application/json' } });
     const data = await res.json();
-    if (data.code === 200 && data.data) {
-      const bal = parseFloat(data.data.balance);
-      el.textContent = bal.toFixed(1);
-    } else {
-      el.textContent = 'Err';
-      showToast('Failed to fetch balance: ' + (data.message || 'Unknown error'), 'error');
-    }
-  } catch (e) {
-    el.textContent = 'Err';
-    showToast('Network error fetching balance. Check CORS extension.', 'error');
-  }
+    if (data.code === 200 && data.data) { el.textContent = parseFloat(data.data.balance).toFixed(1); }
+    else { el.textContent = 'Err'; showToast('Failed to fetch balance.', 'error'); }
+  } catch (e) { el.textContent = 'Err'; showToast('Network error fetching balance.', 'error'); }
 }
 
 // ══════════════════════════════════════════════════════
-// COST ESTIMATION
+// MODE & DURATION
 // ══════════════════════════════════════════════════════
-function updateCostEstimate() {
-  const dur = parseInt(document.getElementById('durationSlider').value);
-  const res = document.getElementById('resolutionSelect').value;
-  const rate = PRICING[res] || 1.6;
-  const cost = dur * rate;
-  document.getElementById('costEstimate').textContent = `≈ ${cost.toFixed(1)} credits`;
+function setMode(mode) {
+  currentMode = mode;
+  const btns = document.querySelectorAll('.mode-toggle button');
+  btns.forEach((b, i) => b.classList.toggle('active', i === (mode === 't2v' ? 0 : 1)));
+  document.getElementById('uploadGroup').style.display = mode === 'i2v' ? '' : 'none';
 }
 
-function updateDuration() {
-  const v = document.getElementById('durationSlider').value;
-  document.getElementById('durationVal').textContent = v + 's';
+function setDuration(d) {
+  selectedDuration = d;
+  document.querySelectorAll('#durationBtns button').forEach(b => b.classList.toggle('active', parseInt(b.textContent) === d));
   updateCostEstimate();
 }
 
-// Wire up cost recalculation
-document.getElementById('resolutionSelect').addEventListener('change', updateCostEstimate);
-document.getElementById('durationSlider').addEventListener('input', updateCostEstimate);
+function updateCostEstimate() {
+  const model = document.getElementById('modelSelect').value;
+  const isPro = model.includes('pro');
+  // Rough estimate
+  const baseRate = isPro ? 5 : 3;
+  const cost = selectedDuration * baseRate;
+  document.getElementById('costEstimate').textContent = `≈ ${cost.toFixed(0)} credits`;
+}
+document.getElementById('modelSelect').addEventListener('change', updateCostEstimate);
 
 // ══════════════════════════════════════════════════════
 // IMAGE UPLOAD
@@ -847,10 +697,7 @@ function handleFileSelect(e) {
   if (file.size > 10 * 1024 * 1024) { showToast('File too large. Max 10MB.', 'error'); return; }
   if (!file.type.startsWith('image/')) { showToast('Please select an image file.', 'error'); return; }
   const reader = new FileReader();
-  reader.onload = function(ev) {
-    uploadedImageDataUrl = ev.target.result;
-    renderUploadPreview();
-  };
+  reader.onload = function(ev) { uploadedImageDataUrl = ev.target.result; renderUploadPreview(); };
   reader.readAsDataURL(file);
 }
 
@@ -858,46 +705,23 @@ function renderUploadPreview() {
   const zone = document.getElementById('uploadZone');
   if (uploadedImageDataUrl) {
     zone.classList.add('has-image');
-    zone.innerHTML = `
-      <img src="${uploadedImageDataUrl}" alt="Uploaded image">
-      <button class="remove-img" onclick="event.stopPropagation();removeImage()" title="Remove">✕</button>
-      <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
-    `;
+    zone.innerHTML = `<img src="${uploadedImageDataUrl}" alt="Reference image"><button class="remove-img" onclick="event.stopPropagation();removeImage()" title="Remove">✕</button><input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">`;
   } else {
     zone.classList.remove('has-image');
-    zone.innerHTML = `
-      <input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)">
-      <div class="upload-icon">🎞️</div>
-      <div class="upload-text">Drop image here or click to upload</div>
-      <div class="upload-hint">Supports JPG, PNG, WEBP · Max 10MB</div>
-    `;
+    zone.innerHTML = `<input type="file" id="fileInput" accept="image/*" onchange="handleFileSelect(event)"><div class="upload-icon">🎞️</div><div class="upload-text">Drop reference image or click to upload</div><div class="upload-hint">Optional reference image · Max 10MB</div>`;
   }
 }
 
-function removeImage() {
-  uploadedImageDataUrl = null;
-  renderUploadPreview();
-}
+function removeImage() { uploadedImageDataUrl = null; renderUploadPreview(); }
 
-// Drag & Drop
 const zone = document.getElementById('uploadZone');
 zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
 zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
 zone.addEventListener('drop', e => {
-  e.preventDefault();
-  zone.classList.remove('drag-over');
+  e.preventDefault(); zone.classList.remove('drag-over');
   const file = e.dataTransfer.files[0];
-  if (file) {
-    const fakeEvent = { target: { files: [file] } };
-    handleFileSelect(fakeEvent);
-  }
+  if (file) handleFileSelect({ target: { files: [file] } });
 });
-
-// ══════════════════════════════════════════════════════
-// UPLOAD IMAGE TO GET A PUBLIC URL
-// ══════════════════════════════════════════════════════
-// Crun.ai API requires HTTP/HTTPS URLs for img_urls.
-// We upload to tmpfiles.org (free, no signup, direct link).
 
 function dataUrlToBlob(dataUrl) {
   const parts = dataUrl.split(',');
@@ -911,99 +735,63 @@ function dataUrlToBlob(dataUrl) {
 async function uploadImageAndGetUrl(dataUrl) {
   const blob = dataUrlToBlob(dataUrl);
   const ext = blob.type.split('/')[1] || 'png';
-  const fileName = `grok_input_${Date.now()}.${ext === 'jpeg' ? 'jpg' : ext}`;
-
-  // Upload to tmpfiles.org
+  const fileName = `sora2_input_${Date.now()}.${ext === 'jpeg' ? 'jpg' : ext}`;
   const formData = new FormData();
   formData.append('file', blob, fileName);
-
-  const res = await fetch('https://tmpfiles.org/api/v1/upload', {
-    method: 'POST',
-    body: formData
-  });
-
+  const res = await fetch('https://tmpfiles.org/api/v1/upload', { method: 'POST', body: formData });
   const json = await res.json();
-
   if (json.status === 'success' && json.data && json.data.url) {
-    // Convert page URL to direct download URL
-    // Page:   https://tmpfiles.org/1234567/image.png
-    // Direct: https://tmpfiles.org/dl/1234567/image.png
     const directUrl = json.data.url.replace('tmpfiles.org/', 'tmpfiles.org/dl/');
-    showToast('Image uploaded successfully!', 'success');
+    showToast('Image uploaded!', 'success');
     return directUrl;
   }
-
-  throw new Error('Image upload failed: ' + (json.message || JSON.stringify(json)));
+  throw new Error('Image upload failed.');
 }
 
 // ══════════════════════════════════════════════════════
 // GENERATE VIDEO
 // ══════════════════════════════════════════════════════
 async function generateVideo() {
-  // Validate
-  if (!uploadedImageDataUrl) {
-    showToast('Please upload an image first.', 'error');
-    return;
-  }
-
   const prompt = document.getElementById('promptInput').value.trim();
-  const duration = parseInt(document.getElementById('durationSlider').value);
-  const resolution = document.getElementById('resolutionSelect').value;
+  if (!prompt) { showToast('Please enter a prompt.', 'error'); return; }
+  if (currentMode === 'i2v' && !uploadedImageDataUrl) { showToast('Please upload a reference image.', 'error'); return; }
+
+  const model = document.getElementById('modelSelect').value;
   const aspectRatio = document.getElementById('aspectSelect').value;
-  const mode = document.getElementById('modeSelect').value;
 
-  // Reset UI
   resetOutput();
-  showProgress('Uploading image & submitting task…');
-
+  showProgress('Submitting task…');
   const btn = document.getElementById('generateBtn');
   btn.disabled = true;
   btn.textContent = '⏳ Generating…';
 
   try {
-    // Get image URL
-    const imgUrl = await uploadImageAndGetUrl(uploadedImageDataUrl);
-
-    // Build request body
     const body = {
-      model: 'grok-imagine/i2v',
-      input: {
-        img_urls: [imgUrl],
-        duration: duration,
-        resolution: resolution,
-        aspect_ratio: aspectRatio,
-        mode: mode
-      }
+      model: model,
+      input: { prompt: prompt, duration: selectedDuration, aspect_ratio: aspectRatio }
     };
 
-    if (prompt) {
-      body.input.prompt = prompt;
+    if (currentMode === 'i2v' && uploadedImageDataUrl) {
+      const imgUrl = await uploadImageAndGetUrl(uploadedImageDataUrl);
+      body.input.img_urls = [imgUrl];
+      updateProgress('Image uploaded, submitting task…', 10);
     }
 
-    // Submit task
     const res = await fetch(CREATE_TASK_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': getApiKey()
-      },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': getApiKey() },
       body: JSON.stringify(body)
     });
-
     const data = await res.json();
 
     if (data.code === 200 && data.data && data.data.task_id) {
       currentTaskId = data.data.task_id;
       document.getElementById('taskIdDisplay').textContent = `Task: ${currentTaskId.substring(0, 12)}…`;
       updateProgress('Task submitted! Waiting for generation…', 15);
-      showToast('Task submitted successfully!', 'success');
-
-      // Start polling
-      startPolling(currentTaskId, { prompt, duration, resolution, aspectRatio, mode });
+      showToast('Task submitted!', 'success');
+      startPolling(currentTaskId, { prompt, duration: selectedDuration, aspectRatio, model });
     } else {
-      const errMsg = data.message || 'Unknown error';
-      const errors = data.errors ? data.errors.join(', ') : '';
-      throw new Error(`API Error (${data.code}): ${errMsg}${errors ? ' — ' + errors : ''}`);
+      throw new Error(`API Error (${data.code}): ${data.message || 'Unknown error'}${data.errors ? ' — ' + data.errors.join(', ') : ''}`);
     }
   } catch (e) {
     showError(e.message);
@@ -1024,68 +812,43 @@ function startPolling(taskId, params) {
   }, 1000);
 
   const startTime = Date.now();
-
   async function poll() {
     if (Date.now() - startTime > MAX_POLL_TIME) {
-      stopPolling();
-      showError('Polling timed out after 20 minutes. Task may still be running — check the task ID manually.');
-      return;
+      stopPolling(); showError('Polling timed out after 20 minutes.'); return;
     }
-
     try {
-      const url = `${TASK_INFO_URL}?task_id=${taskId}`;
-      const res = await fetch(url, {
-        method: 'GET',
-        headers: { 'x-api-key': getApiKey(), 'Content-Type': 'application/json' }
-      });
+      const res = await fetch(`${TASK_INFO_URL}?task_id=${taskId}`, { method: 'GET', headers: { 'x-api-key': getApiKey(), 'Content-Type': 'application/json' } });
       const data = await res.json();
-
       if (data.code === 200 && data.data) {
         const task = data.data;
-        const status = task.status;
-
-        if (status === 'pending') {
-          updateProgress('Task queued — waiting for processing…', 20);
-        } else if (status === 'running') {
-          // Estimate progress based on elapsed time vs expected duration
-          const expectedTime = params.duration * 15; // rough estimate
+        if (task.status === 'pending') { updateProgress('Task queued…', 20); }
+        else if (task.status === 'running') {
+          const expectedTime = params.duration * 20;
           const progress = Math.min(85, 25 + (elapsedSeconds / expectedTime) * 60);
-          updateProgress('Generating video… This may take a few minutes.', progress);
-        } else if (status === 'success') {
-          stopPolling();
-          updateProgress('Generation complete!', 100);
-
+          updateProgress('Generating video…', progress);
+        }
+        else if (task.status === 'success') {
+          stopPolling(); updateProgress('Complete!', 100);
           if (task.result && task.result.media_urls && task.result.media_urls.length > 0) {
             currentVideoUrl = task.result.media_urls[0];
             showVideoResult(currentVideoUrl);
             addToHistory(taskId, params, currentVideoUrl, task.duration_s);
-            showToast('Video generated successfully!', 'success');
-            fetchBalance(); // Refresh balance after generation
-          } else {
-            showError('Task succeeded but no video URL was returned.');
-          }
+            showToast('Video generated!', 'success');
+            fetchBalance();
+          } else { showError('Task succeeded but no video URL returned.'); }
           return;
-        } else if (status === 'failed') {
+        }
+        else if (task.status === 'failed') {
           stopPolling();
           const failMsg = task.result ? (task.result.message || 'Unknown failure') : 'Generation failed';
-          const failCode = task.result ? task.result.code : '';
-          showError(`Generation failed (${failCode}): ${failMsg}`);
+          showError(`Generation failed: ${failMsg}`);
           showToast('Generation failed.', 'error');
           return;
         }
-      } else {
-        // Non-200 response but keep polling
-        console.warn('Polling got non-200:', data);
       }
-    } catch (e) {
-      console.error('Poll error:', e);
-      // Don't stop polling on network errors, just log
-    }
-
+    } catch (e) { console.error('Poll error:', e); }
     pollTimer = setTimeout(poll, POLL_INTERVAL);
   }
-
-  // First poll after 10 seconds (delayed first poll as recommended)
   pollTimer = setTimeout(poll, 10000);
 }
 
@@ -1114,7 +877,6 @@ function resetOutput() {
   document.getElementById('progressBar').style.width = '0%';
   document.getElementById('taskIdDisplay').textContent = '';
 }
-
 function showProgress(text, percent) {
   document.getElementById('outputPlaceholder').style.display = 'none';
   document.getElementById('progressContainer').classList.add('active');
@@ -1123,19 +885,16 @@ function showProgress(text, percent) {
   document.getElementById('statusText').textContent = text;
   if (percent !== undefined) document.getElementById('progressBar').style.width = percent + '%';
 }
-
 function updateProgress(text, percent) {
   document.getElementById('statusText').textContent = text;
   if (percent !== undefined) document.getElementById('progressBar').style.width = percent + '%';
 }
-
 function showError(msg) {
   document.getElementById('progressContainer').classList.remove('active');
   const box = document.getElementById('errorBox');
   box.textContent = msg;
   box.classList.add('active');
 }
-
 function showVideoResult(url) {
   document.getElementById('progressContainer').classList.remove('active');
   document.getElementById('errorBox').classList.remove('active');
@@ -1157,225 +916,95 @@ async function downloadVideo() {
     const blob = await res.blob();
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url;
-    a.download = `grok-video-${Date.now()}.mp4`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    a.href = url; a.download = `sora2-video-${Date.now()}.mp4`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('Download started!', 'success');
-  } catch (e) {
-    // Fallback: open in new tab
-    window.open(currentVideoUrl, '_blank');
-    showToast('Opening video in new tab (download may require right-click → Save As)', 'info');
-  }
+  } catch (e) { window.open(currentVideoUrl, '_blank'); showToast('Opening in new tab.', 'info'); }
 }
-
 function copyVideoUrl() {
   if (!currentVideoUrl) return;
-  navigator.clipboard.writeText(currentVideoUrl).then(() => {
-    showToast('Video URL copied to clipboard!', 'success');
-  }).catch(() => {
-    // Fallback
-    const ta = document.createElement('textarea');
-    ta.value = currentVideoUrl;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    showToast('Video URL copied!', 'success');
+  navigator.clipboard.writeText(currentVideoUrl).then(() => showToast('URL copied!', 'success')).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = currentVideoUrl; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta); showToast('URL copied!', 'success');
   });
 }
-
-function generateAgain() {
-  resetOutput();
-  document.getElementById('outputPlaceholder').style.display = '';
-  currentVideoUrl = null;
-  currentTaskId = null;
-}
+function generateAgain() { resetOutput(); document.getElementById('outputPlaceholder').style.display = ''; currentVideoUrl = null; currentTaskId = null; }
 
 // ══════════════════════════════════════════════════════
 // TEMPLATES
 // ══════════════════════════════════════════════════════
 function saveTemplate() {
   const prompt = document.getElementById('promptInput').value.trim();
-  if (!prompt) {
-    showToast('Write a prompt first before saving.', 'error');
-    return;
-  }
+  if (!prompt) { showToast('Write a prompt first.', 'error'); return; }
   document.getElementById('templateTitleInput').value = '';
   openModal('saveTemplate');
   setTimeout(() => document.getElementById('templateTitleInput').focus(), 100);
 }
-
 function confirmSaveTemplate() {
   const title = document.getElementById('templateTitleInput').value.trim();
-  if (!title) {
-    showToast('Please enter a title for this template.', 'error');
-    return;
-  }
-
-  const template = {
-    id: Date.now().toString(),
-    title: title,
-    prompt: document.getElementById('promptInput').value.trim(),
-    duration: parseInt(document.getElementById('durationSlider').value),
-    resolution: document.getElementById('resolutionSelect').value,
-    aspectRatio: document.getElementById('aspectSelect').value,
-    mode: document.getElementById('modeSelect').value,
-    createdAt: new Date().toISOString()
-  };
-
+  if (!title) { showToast('Please enter a title.', 'error'); return; }
+  const template = { id: Date.now().toString(), title, prompt: document.getElementById('promptInput').value.trim(), duration: selectedDuration, model: document.getElementById('modelSelect').value, aspectRatio: document.getElementById('aspectSelect').value, mode: currentMode, createdAt: new Date().toISOString() };
   const templates = getTemplates();
   templates.unshift(template);
   setTemplates(templates);
-
   closeModal('saveTemplate');
   showToast(`Template "${title}" saved!`, 'success');
 }
-
 function loadTemplate(id) {
-  const templates = getTemplates();
-  const t = templates.find(x => x.id === id);
+  const t = getTemplates().find(x => x.id === id);
   if (!t) return;
-
   document.getElementById('promptInput').value = t.prompt || '';
-  document.getElementById('durationSlider').value = t.duration || 6;
-  document.getElementById('resolutionSelect').value = t.resolution || '480p';
-  document.getElementById('aspectSelect').value = t.aspectRatio || '9:16';
-  document.getElementById('modeSelect').value = t.mode || 'fun';
-  updateDuration();
+  if (t.duration) setDuration(t.duration);
+  if (t.model) document.getElementById('modelSelect').value = t.model;
+  if (t.aspectRatio) document.getElementById('aspectSelect').value = t.aspectRatio;
+  if (t.mode) setMode(t.mode);
   updateCostEstimate();
-
   closeModal('templates');
   showToast(`Template "${t.title}" loaded!`, 'success');
 }
-
 function deleteTemplate(id, e) {
   e.stopPropagation();
-  const templates = getTemplates().filter(x => x.id !== id);
-  setTemplates(templates);
+  setTemplates(getTemplates().filter(x => x.id !== id));
   renderTemplatesList();
   showToast('Template deleted.', 'info');
 }
-
 function renderTemplatesList() {
   const list = document.getElementById('templatesList');
   const templates = getTemplates();
-  if (templates.length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>No saved templates yet.<br>Save a prompt with settings to create one.</p></div>';
-    return;
-  }
-  list.innerHTML = templates.map(t => `
-    <div class="list-item" onclick="loadTemplate('${t.id}')">
-      <div class="item-info">
-        <div class="item-title">${escHtml(t.title)}</div>
-        <div class="item-meta">
-          <span>${t.duration || 6}s</span>
-          <span>${t.resolution || '480p'}</span>
-          <span>${t.aspectRatio || '9:16'}</span>
-          <span>${t.mode || 'fun'}</span>
-        </div>
-        <div class="item-prompt">${escHtml(t.prompt)}</div>
-      </div>
-      <div class="item-actions">
-        <button class="use-btn" title="Use this template" onclick="loadTemplate('${t.id}')">✓</button>
-        <button title="Delete" onclick="deleteTemplate('${t.id}', event)">🗑</button>
-      </div>
-    </div>
-  `).join('');
+  if (templates.length === 0) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>No saved templates yet.</p></div>'; return; }
+  list.innerHTML = templates.map(t => `<div class="list-item" onclick="loadTemplate('${t.id}')"><div class="item-info"><div class="item-title">${escHtml(t.title)}</div><div class="item-meta"><span>${t.duration || 4}s</span><span>${t.model ? (t.model.includes('pro') ? 'Pro' : 'Standard') : 'Standard'}</span><span>${t.aspectRatio || '16:9'}</span></div><div class="item-prompt">${escHtml(t.prompt)}</div></div><div class="item-actions"><button class="use-btn" title="Use" onclick="loadTemplate('${t.id}')">✓</button><button title="Delete" onclick="deleteTemplate('${t.id}', event)">🗑</button></div></div>`).join('');
 }
 
 // ══════════════════════════════════════════════════════
 // HISTORY
 // ══════════════════════════════════════════════════════
 function addToHistory(taskId, params, videoUrl, durationS) {
-  const entry = {
-    id: Date.now().toString(),
-    taskId: taskId,
-    prompt: params.prompt || '(no prompt)',
-    duration: params.duration,
-    resolution: params.resolution,
-    aspectRatio: params.aspectRatio,
-    mode: params.mode,
-    videoUrl: videoUrl,
-    generationTime: durationS || elapsedSeconds,
-    cost: (params.duration * (PRICING[params.resolution] || 1.6)).toFixed(1),
-    createdAt: new Date().toISOString()
-  };
+  const entry = { id: Date.now().toString(), taskId, prompt: params.prompt || '(no prompt)', duration: params.duration, model: params.model, aspectRatio: params.aspectRatio, videoUrl, generationTime: durationS || elapsedSeconds, createdAt: new Date().toISOString() };
   const history = getHistory();
   history.unshift(entry);
-  // Keep last 50
   if (history.length > 50) history.length = 50;
   setHistory(history);
   updateHistoryBadge();
 }
-
 function updateHistoryBadge() {
   const badge = document.getElementById('historyBadge');
   const count = getHistory().length;
-  if (count > 0) {
-    badge.style.display = 'flex';
-    badge.textContent = count;
-  } else {
-    badge.style.display = 'none';
-  }
+  badge.style.display = count > 0 ? 'flex' : 'none';
+  badge.textContent = count;
 }
-
 function renderHistoryList() {
   const list = document.getElementById('historyList');
   const history = getHistory();
-  if (history.length === 0) {
-    list.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div><p>No generation history yet.<br>Generate a video to see it here.</p></div>';
-    return;
-  }
+  if (history.length === 0) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">📜</div><p>No generation history yet.</p></div>'; return; }
   list.innerHTML = history.map(h => {
     const date = new Date(h.createdAt);
     const dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    return `
-    <div class="list-item" onclick="playHistoryVideo('${escAttr(h.videoUrl)}')">
-      <div class="item-info">
-        <div class="item-title">${escHtml(h.prompt)}</div>
-        <div class="item-meta">
-          <span>${dateStr}</span>
-          <span>${h.duration}s</span>
-          <span>${h.resolution}</span>
-          <span>${h.mode}</span>
-          <span style="color:var(--warning)">${h.cost} credits</span>
-          <span style="color:var(--text3)">Gen: ${formatTime(h.generationTime || 0)}</span>
-        </div>
-      </div>
-      <div class="item-actions">
-        <button class="use-btn" title="Play this video" onclick="event.stopPropagation();playHistoryVideo('${escAttr(h.videoUrl)}')">▶</button>
-        <button title="Delete" onclick="event.stopPropagation();deleteHistory('${h.id}')">🗑</button>
-      </div>
-    </div>
-  `}).join('');
+    return `<div class="list-item" onclick="playHistoryVideo('${escAttr(h.videoUrl)}')"><div class="item-info"><div class="item-title">${escHtml(h.prompt)}</div><div class="item-meta"><span>${dateStr}</span><span>${h.duration}s</span><span>${h.model ? (h.model.includes('pro') ? 'Pro' : 'Std') : 'Std'}</span><span style="color:var(--text3)">Gen: ${formatTime(h.generationTime || 0)}</span></div></div><div class="item-actions"><button class="use-btn" title="Play" onclick="event.stopPropagation();playHistoryVideo('${escAttr(h.videoUrl)}')">▶</button><button title="Delete" onclick="event.stopPropagation();deleteHistory('${h.id}')">🗑</button></div></div>`;
+  }).join('');
 }
-
-function playHistoryVideo(url) {
-  closeModal('history');
-  currentVideoUrl = url;
-  resetOutput();
-  showVideoResult(url);
-}
-
-function deleteHistory(id) {
-  const history = getHistory().filter(x => x.id !== id);
-  setHistory(history);
-  renderHistoryList();
-  updateHistoryBadge();
-  showToast('History entry deleted.', 'info');
-}
-
-function clearHistory() {
-  if (!confirm('Clear all generation history? This cannot be undone.')) return;
-  setHistory([]);
-  renderHistoryList();
-  updateHistoryBadge();
-  closeModal('history');
-  showToast('History cleared.', 'info');
-}
+function playHistoryVideo(url) { closeModal('history'); currentVideoUrl = url; resetOutput(); showVideoResult(url); }
+function deleteHistory(id) { setHistory(getHistory().filter(x => x.id !== id)); renderHistoryList(); updateHistoryBadge(); showToast('Deleted.', 'info'); }
+function clearHistory() { if (!confirm('Clear all history?')) return; setHistory([]); renderHistoryList(); updateHistoryBadge(); closeModal('history'); showToast('History cleared.', 'info'); }
 
 // ══════════════════════════════════════════════════════
 // MODALS
@@ -1385,50 +1014,26 @@ function openModal(name) {
   if (name === 'history') renderHistoryList();
   document.getElementById(name + 'Modal').classList.add('active');
 }
-
-function closeModal(name) {
-  document.getElementById(name + 'Modal').classList.remove('active');
-}
-
-// Close modals on overlay click
+function closeModal(name) { document.getElementById(name + 'Modal').classList.remove('active'); }
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) overlay.classList.remove('active');
-  });
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('active'); });
 });
-
-// Close modals on Escape
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
-  }
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
 });
 
 // ══════════════════════════════════════════════════════
 // UTILS
 // ══════════════════════════════════════════════════════
-function escHtml(str) {
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
-function escAttr(str) {
-  return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-}
+function escHtml(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+function escAttr(str) { return str.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
 // ══════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════
 updateCostEstimate();
 fetchBalance();
-
-// Boot cloud storage, then update UI
-initCloudStorage().then(() => {
-  updateHistoryBadge();
-}).catch(e => {
-  console.error('Cloud init error:', e);
-  updateHistoryBadge();
-});
+initCloudStorage().then(() => updateHistoryBadge()).catch(e => { console.error('Cloud init error:', e); updateHistoryBadge(); });
 </script>
 </body>
 </html>
