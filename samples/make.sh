@@ -23,4 +23,6 @@ wait
 ffmpeg -y -loglevel error -f concat -safe 0 -i $B/chunks.txt -c copy $B/video.mp4
 python3 tools/audio.py $B
 ffmpeg -y -loglevel error -i $B/video.mp4 -i $B/mix.wav -c:v copy -c:a aac -b:a 192k -shortest -movflags +faststart $B/$SCENE.mp4
-echo "done: $B/$SCENE.mp4"
+# smaller copy for sharing (chat apps, previews)
+ffmpeg -y -loglevel error -i $B/$SCENE.mp4 -c:v libx264 -preset slow -crf 24 -maxrate 6M -bufsize 12M -pix_fmt yuv420p -c:a copy -movflags +faststart $B/${SCENE}_share.mp4
+echo "done: $B/$SCENE.mp4 (+ ${SCENE}_share.mp4)"
