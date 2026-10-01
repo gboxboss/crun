@@ -1,0 +1,12 @@
+node_modules/
+.DS_Store
+.env
+.env.*
+
+# spike assets fetched by spikes/webgl-render/fetch-assets.sh
+spikes/webgl-render/www/lib/
+spikes/webgl-render/www/fonts/
+spikes/webgl-render/www/data/*
+!spikes/webgl-render/www/data/country_labels.geojson
+spikes/webgl-render/out/
+spikes/webgl-render/remotion/build/

@@ -1,0 +1,8 @@
+import pickle, pandas as pd
+pol=pickle.load(open('pol.pkl','rb'))
+def show(name, a=None, b=None):
+    s=pol[pol.Name==name].sort_values('FromYear')
+    if a is not None: s=s[(s.ToYear>=a)&(s.FromYear<=b)]
+    print(f'## {name}: rows={len(s)}', [(r.FromYear,r.ToYear,int(r.Area)) for r in s.itertuples()][:40])
+for n,a,b in [('Nazi Germany',1933,1945),('Union of Soviet Socialist Republics',1939,1946),('Confederate States of America',1860,1866),('United States of America',1860,1866),('First French Empire',1804,1815),('Mongol Empire',1200,1300),('Roman Republic',-300,-20),('Roman Empire',-30,400),('Macedonian Empire',-340,-300),('Cao Wei',180,300),('Shu Han',180,300),('Eastern Wu',180,300),('Inca Empire',1400,1600),('Aztec Triple Alliance',1400,1600),('Ottoman Empire',1290,1925),('Republic of India',1945,1950),('Islamic Republic of Pakistan',1945,1975),("Democratic People's Republic of Korea",1945,1955),('Republic of Korea',1945,1955),('Russian-occupied territories',1900,2025),('Ukraine',1990,2025),('Kingdom of Jerusalem',1090,1300),('Spanish Empire',1490,1600),('Empire of Japan',1930,1946),('Republic of China',1911,1950),('Communist Party of China',1920,1950),('British Raj',1850,1950),('Austria-Hungary',1867,1920),('German Empire',1871,1919),('Russian Empire',1700,1920),('Achaemenid Empire',-600,-300),('Han Dynasty',-210,230),('Qin',-400,-200),('Carthage',-800,-140),('Byzantine Empire',395,1460),('Umayyad Caliphate',600,760),('Rashidun Caliphate',600,700),('Timurid Empire',1360,1510),('Golden Horde',1200,1500),('Polish-Lithuanian Commonwealth',1560,1800),('Holy Roman Empire',1600,1660),('Kingdom of Prussia',1700,1920),('Swedish Empire',1600,1730),('Habsburg Monarchy',1600,1660)]:
+    show(n,a,b)

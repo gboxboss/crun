@@ -1,0 +1,186 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="lib/maplibre-gl.css">
+<style>
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #9fc3d6; }
+  #map { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script type="module">
+import * as maplibregl from './lib/maplibre-gl.mjs';
+window.maplibregl = maplibregl;
+
+const params = new URLSearchParams(location.search);
+const PR = parseFloat(params.get('pr') || '1');          // map pixelRatio
+const AA = params.get('aa') !== '0';                       // MSAA antialias
+const D = location.origin + '/data/';
+const NOHEAD = params.get('nohead') === '1';
+const SKIP = params.get('skip') === '1';   // only paint once per output frame
+const DROP = (params.get('drop') || '').split(',').filter(Boolean);
+
+// Route: London -> Paris -> Munich -> Vienna -> Belgrade -> Istanbul -> Ankara -> Aleppo -> Baghdad
+const waypoints = [[-0.13,51.51],[2.35,48.86],[11.58,48.14],[16.37,48.21],[20.46,44.79],[28.98,41.01],[32.85,39.93],[37.16,36.2],[44.37,33.31]];
+function densify(pts, n) {
+  const out = [];
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [a, b] = [pts[i], pts[i+1]];
+    for (let k = 0; k < n; k++) {
+      const s = k / n;
+      // slight arc for a "flight path" look
+      const arc = Math.sin(Math.PI * s) * 0.6;
+      out.push([a[0] + (b[0]-a[0])*s, a[1] + (b[1]-a[1])*s + arc]);
+    }
+  }
+  out.push(pts[pts.length-1]);
+  return out;
+}
+const route = densify(waypoints, 40);
+// cumulative lengths (planar, good enough for progress)
+const cum = [0];
+for (let i = 1; i < route.length; i++) cum.push(cum[i-1] + Math.hypot(route[i][0]-route[i-1][0], route[i][1]-route[i-1][1]));
+const total = cum[cum.length-1];
+function pointAt(p) {
+  const d = p * total;
+  let i = 1; while (i < cum.length - 1 && cum[i] < d) i++;
+  const s = (d - cum[i-1]) / Math.max(1e-9, cum[i]-cum[i-1]);
+  return [route[i-1][0] + (route[i][0]-route[i-1][0])*s, route[i-1][1] + (route[i][1]-route[i-1][1])*s];
+}
+
+const style = {
+  version: 8,
+  glyphs: location.origin + '/fonts/{fontstack}/{range}.pbf',
+  transition: { duration: 0, delay: 0 },
+  sources: {
+    countries: { type: 'geojson', data: D + 'ne_10m_admin_0_countries.geojson', tolerance: 0.375 },
+    lakes: { type: 'geojson', data: D + 'ne_10m_lakes.geojson' },
+    rivers: { type: 'geojson', data: D + 'ne_10m_rivers_lake_centerlines.geojson' },
+    admin1: { type: 'geojson', data: D + 'ne_10m_admin_1_states_provinces_lines.geojson' },
+    places: { type: 'geojson', data: D + 'ne_10m_populated_places_simple.geojson' },
+    clabels: { type: 'geojson', data: D + 'country_labels.geojson' },
+    route: { type: 'geojson', lineMetrics: true, data: { type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: route } } },
+    head: { type: 'geojson', data: { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: route[0] } } },
+  },
+  layers: [
+    { id: 'ocean', type: 'background', paint: { 'background-color': '#9fc3d6' } },
+    { id: 'country-fill', type: 'fill', source: 'countries', paint: {
+      'fill-color': ['match', ['get', 'MAPCOLOR7'], 1, '#f1e9d6', 2, '#e9e3cf', 3, '#efe2cc', 4, '#e6e6d2', 5, '#ede4d8', 6, '#e4dcc4', '#ece6d6'] } },
+    { id: 'highlight', type: 'fill', source: 'countries', filter: ['==', ['get', 'ADM0_A3'], 'IRQ'], paint: { 'fill-color': '#d9482b', 'fill-opacity': 0 } },
+    { id: 'lakes', type: 'fill', source: 'lakes', paint: { 'fill-color': '#9fc3d6' } },
+    { id: 'rivers', type: 'line', source: 'rivers', minzoom: 3, paint: { 'line-color': '#8fb6cc', 'line-width': ['interpolate', ['linear'], ['zoom'], 3, 0.5, 7, 1.6] } },
+    { id: 'admin1', type: 'line', source: 'admin1', minzoom: 3.5, paint: { 'line-color': '#b9ad96', 'line-width': 0.6, 'line-dasharray': [3, 2] } },
+    { id: 'borders', type: 'line', source: 'countries', paint: { 'line-color': '#8c7d66', 'line-width': ['interpolate', ['linear'], ['zoom'], 2, 0.6, 7, 1.8] } },
+    { id: 'highlight-line', type: 'line', source: 'countries', filter: ['==', ['get', 'ADM0_A3'], 'IRQ'], paint: { 'line-color': '#a8321c', 'line-width': 2.5, 'line-opacity': 0 } },
+    { id: 'route-casing', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-color': '#fff', 'line-width': 9, 'line-gradient': ['step', ['line-progress'], '#ffffff', 0.0001, 'rgba(255,255,255,0)'] } },
+    { id: 'route', type: 'line', source: 'route', layout: { 'line-cap': 'round', 'line-join': 'round' }, paint: { 'line-width': 5, 'line-gradient': ['step', ['line-progress'], '#c0392b', 0.0001, 'rgba(0,0,0,0)'] } },
+    { id: 'head', type: 'circle', source: 'head', paint: { 'circle-radius': 9, 'circle-color': '#c0392b', 'circle-stroke-color': '#fff', 'circle-stroke-width': 3 } },
+    { id: 'place-dots', type: 'circle', source: 'places', filter: ['<=', ['get', 'min_zoom'], ['+', ['zoom'], 1]], paint: { 'circle-radius': 3, 'circle-color': '#3b3127' } },
+    { id: 'place-labels', type: 'symbol', source: 'places', filter: ['<=', ['get', 'min_zoom'], ['+', ['zoom'], 1]], layout: {
+      'text-field': ['get', 'name'], 'text-font': ['Noto Sans Regular'], 'text-size': ['interpolate', ['linear'], ['zoom'], 3, 11, 7, 16],
+      'text-offset': [0, 0.9], 'text-anchor': 'top', 'symbol-sort-key': ['get', 'scalerank'] },
+      paint: { 'text-color': '#2b241c', 'text-halo-color': 'rgba(255,255,255,0.85)', 'text-halo-width': 1.4 } },
+    { id: 'country-labels', type: 'symbol', source: 'clabels', filter: ['<=', ['get', 'minz'], ['+', ['zoom'], 1.5]], layout: {
+      'text-field': ['upcase', ['get', 'name']], 'text-font': ['Noto Sans Medium'], 'text-size': ['interpolate', ['linear'], ['zoom'], 2, 10, 7, 20],
+      'text-letter-spacing': 0.15, 'text-max-width': 8, 'symbol-sort-key': ['get', 'rank'] },
+      paint: { 'text-color': '#5b4a36', 'text-halo-color': 'rgba(255,255,255,0.7)', 'text-halo-width': 1.2 } },
+  ]
+};
+
+// ---------- pure function of t (seconds) ----------
+const DUR = 6;
+const smooth = x => x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x);
+const lerp = (a, b, s) => a + (b - a) * s;
+function sceneAt(t) {
+  const e = smooth(t / DUR);
+  const start = { lng: 2.0, lat: 48.5, zoom: 4.6, bearing: 0, pitch: 0 };
+  const end   = { lng: 42.0, lat: 34.5, zoom: 5.2, bearing: -25, pitch: 55 };
+  // interpolate center in mercator for straight-on-screen flight
+  const m0 = maplibregl.MercatorCoordinate.fromLngLat([start.lng, start.lat]);
+  const m1 = maplibregl.MercatorCoordinate.fromLngLat([end.lng, end.lat]);
+  const c = new maplibregl.MercatorCoordinate(lerp(m0.x, m1.x, e), lerp(m0.y, m1.y, e)).toLngLat();
+  return {
+    camera: { center: [c.lng, c.lat], zoom: lerp(start.zoom, end.zoom, e) - 1.3 * Math.sin(Math.PI * e), bearing: lerp(start.bearing, end.bearing, e), pitch: lerp(start.pitch, end.pitch, e) },
+    routeProgress: smooth((t - 0.3) / (DUR - 1.2)),
+    highlight: smooth((t - 3.6) / 1.6),
+  };
+}
+
+style.layers = style.layers.filter(l => !DROP.includes(l.id));
+let map;
+window.__setup = () => new Promise((resolve, reject) => {
+  const t0 = performance.now();
+  maplibregl.setNow(0);
+  map = new maplibregl.Map({
+    container: 'map', style, interactive: false, attributionControl: false,
+    fadeDuration: 0, pixelRatio: PR, renderWorldCopies: false,
+    canvasContextAttributes: { preserveDrawingBuffer: true, antialias: AA },
+    center: [2, 48.5], zoom: 4.6, maxTileCacheSize: 2000,
+  });
+  window.map = map;
+  window.__renders = 0; window.__paints = 0; map.on('render', () => window.__renders++);
+  const origRender = map.painter.render;
+  map.painter.render = function (...args) { if (SKIP && window.__skipPaint) return; window.__paints++; return origRender.apply(this, args); };
+  map.on('error', e => console.log('maplibre error: ' + (e.error && e.error.message)));
+  map.once('idle', () => {
+    const gl = map.painter.context.gl;
+    const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+    resolve({ setupMs: performance.now() - t0, renderer: dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER), version: gl.getParameter(gl.VERSION), canvas: [map.getCanvas().width, map.getCanvas().height] });
+  });
+  setTimeout(() => reject(new Error('setup timeout')), 120000);
+});
+
+function waitIdle(timeoutMs = 30000) {
+  return new Promise((resolve) => {
+    let done = false;
+    const to = setTimeout(() => { if (!done) { done = true; resolve(false); } }, timeoutMs);
+    map.once('idle', () => { if (!done) { done = true; clearTimeout(to); resolve(true); } });
+    map.triggerRepaint();
+  });
+}
+
+// Apply frame i deterministically and wait until fully rendered.
+window.__frame = async (i, fps = 30) => {
+  const t = i / fps;
+  const s = sceneAt(t);
+  const a = performance.now();
+  const r0 = window.__renders, p0 = window.__paints;
+  window.__skipPaint = true;
+  maplibregl.setNow(t * 1000);
+  map.jumpTo(s.camera);
+  const p = Math.max(0.0001, Math.min(0.9999, s.routeProgress));
+  const vis = s.routeProgress > 0 ? 1 : 0;
+  map.setPaintProperty('route', 'line-gradient', ['step', ['line-progress'], vis ? '#c0392b' : 'rgba(0,0,0,0)', p, 'rgba(0,0,0,0)']);
+  map.setPaintProperty('route-casing', 'line-gradient', ['step', ['line-progress'], vis ? '#ffffff' : 'rgba(0,0,0,0)', p, 'rgba(255,255,255,0)']);
+  if (!NOHEAD) map.getSource('head').setData({ type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: pointAt(p) } });
+  map.setPaintProperty('head', 'circle-opacity', vis);
+  map.setPaintProperty('head', 'circle-stroke-opacity', vis);
+  map.setPaintProperty('highlight', 'fill-opacity', 0.55 * s.highlight);
+  map.setPaintProperty('highlight-line', 'line-opacity', s.highlight);
+  const ok = await waitIdle();
+  window.__skipPaint = false;
+  if (SKIP) map.redraw();   // single synchronous paint of the settled state
+  return { ok, renderMs: performance.now() - a, renders: window.__paints - p0 };
+};
+
+// in-page readback variants
+window.__readback = (kind, q = 0.9) => {
+  const c = map.getCanvas();
+  if (kind === 'png') return c.toDataURL('image/png');
+  if (kind === 'jpeg') return c.toDataURL('image/jpeg', q);
+  if (kind === 'webp') return c.toDataURL('image/webp', q);
+  if (kind === 'finish') { const gl = map.painter.context.gl; const px = new Uint8Array(4); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return 'x,' ; }
+  if (kind === 'raw') {
+    const gl = map.painter.context.gl;
+    const w = gl.drawingBufferWidth, h = gl.drawingBufferHeight;
+    const buf = new Uint8Array(w * h * 4);
+    gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, buf);
+    return buf; // caller converts
+  }
+};
+window.__ready = true;
+</script>
+</body>
+</html>

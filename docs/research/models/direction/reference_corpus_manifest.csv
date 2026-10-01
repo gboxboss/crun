@@ -1,0 +1,16 @@
+ref_id,channel,format,aspect,candidate_video (resolve exact ID with yt-dlp ytsearch),why_in_corpus,launch_preset_it_informs,status
+R01,Kings and Generals,battle long-form,16:9,"a single-battle episode (e.g. Cannae / Gaugamela)",unit-block maneuver grammar; parchment map; narrator-led pacing,P2 Campaign/Battle,PENDING-MEASUREMENT (YouTube egress blocked in research container)
+R02,Kings and Generals,battle long-form,16:9,"a second battle episode from a different era",controls for era/style drift within channel,P2,PENDING
+R03,Epic History TV,campaign long-form,16:9,"a Napoleon 1812 campaign episode",campaign-scale arrows + chapter structure + portraits,P2,PENDING
+R04,RealLifeLore,why-explainer long-form,16:9,"a geography 'why does X live/settle where' video",satellite/terrain + data overlays; zoom-to-focus grammar,P1 Documentary Satellite,PENDING
+R05,Johnny Harris,documentary explainer,16:9,"a geopolitics history video with map sequences (e.g. US-Saudi relations)",mixed talking-head + map; paper textures; music drops,P1,PENDING (third-party VLM teardown of one JH video available: github.com/voidash/claudepipe pass2_patterns.md)
+R06,PolyMatter,flat explainer,16:9,"a China/economy explainer",flat vector + crossfades; 4-9 s per visual (secondary scan),P3 Flat Explainer,PENDING (secondary cadence scan exists)
+R07,Wendover Productions,logistics explainer,16:9,"a transport/logistics explainer",route draw-ons + long data-graphic holds (40-60 s, secondary),P3,PENDING (secondary cadence scan exists)
+R08,EmperorTigerstar,timelapse,16:9,"an 'Every Day/Every Year' war timelapse",single-map border morph + date counter; no narration,P4 Timelapse,PENDING
+R09,Ollie Bye,narrated timelapse,16:9,"The History of the World: Every Year",narrated timelapse; border morph synced to narration,P4,PENDING
+R10,Vox (control),editorial explainer,16:9,"a Vox map explainer",process is publicly documented (12fps stutter; cut-on-velocity) - calibrates the annotation pipeline,P1/P3,PENDING
+R11,Short-form map account A,map short,9:16,"top-viewed 30-60 s map short (geography fact)",short-form hook + fast zooms,P1-short,PENDING (choose by view count at measurement time)
+R12,Short-form map account B,map short,9:16,"top-viewed history-timelapse short",timelapse in vertical,P4-short,PENDING
+R13,Short-form map account C,map short,9:16,"top-viewed 'country size comparison' short",size-compare template,P1/P3-short,PENDING
+R14,Short-form map account D,map short,9:16,"top-viewed war/battle short",arrows/units in vertical,P2-short,PENDING
+R15,Short-form map account E,map short,9:16,"top-viewed 3D terrain/flyover short",terrain flyover + rain/snow FX,P1-short,PENDING

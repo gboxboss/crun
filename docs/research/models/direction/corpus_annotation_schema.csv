@@ -1,0 +1,16 @@
+column,type,how_filled,definition
+ref_id,str,manifest,R01..R15 (+ expansion to 40-60 videos)
+shot_index / segment_index,int,measure_corpus.py,cut-to-cut shot; camera segment inside a continuous shot
+start_s / end_s / duration_s,float,measure_corpus.py,segment timing (PySceneDetect cuts confirmed by global-motion check)
+cut_in,enum,measure_corpus.py + human,cut | camera_change | crossfade | zoom_through | whip | wipe | dip | match_motion_cut
+camera_move,enum,measure_corpus.py (affine flow) + human fix,static | push | pull | pan | flyTo(zoom+pan arc) | orbit_3d | rotate | compound
+primitives,list[str],VLM pass (Claude Sonnet 5.5 on 3 keyframes + transcript window) + 10-20% human verify,local IDs (CAM.* MAP.* GFX.* FX.*) mapped to Area-1 catalog
+n_new_elements_max_0.5s,int,measure_corpus.py events + VLM count,max number of new on-screen elements entering within any 0.5 s window
+event_word_offsets_ms,list[int],measure_corpus.py --words,visual event onset minus nearest word onset (negative = visual leads)
+referent_sync_ms,int,VLM/human,offset between the element that depicts the spoken referent and the referent word onset
+sfx_hit,bool+type,audio onset pass (librosa) + human,whoosh | hit | pop | riser | ambient | none; offset to visual impact frame (ms)
+music_event,enum,audio novelty pass + human,none | change | drop_to_silence | swell
+beat_type,enum,LLM over transcript window + human,BT.* taxonomy (HOOK ESTABLISH_PLACE ZOOM_TO_FOCUS MANEUVER CLASH ... )
+pattern_interrupt,bool,rule,visual-mode change (map->portrait/chart/doc/title/3D) or music event or SFX hit with mode change
+hero_shot,bool,human,shot judged by annotators as a signature 'wow' moment (3D flyover + weather; mass arrow sweep; full border morph)
+provenance,enum,all,M (measured) | V (VLM) | H (human verified)
