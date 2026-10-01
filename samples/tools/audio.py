@@ -53,7 +53,112 @@ def reverb(x, secs=1.2, mix=0.25):
 
 
 # ---------------- SFX ----------------
+# Recorded CC0 samples (fetched by fetch-media.sh into www/assets/vendor/sfx) are preferred; synthesis is the fallback.
+SAMPLES = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "www", "assets", "vendor", "sfx")
+
+
+def smp(name):
+    p = os.path.join(SAMPLES, name + ".wav")
+    if not os.path.exists(p):
+        return None
+    x, sr = sf.read(p, always_2d=True)
+    x = x.mean(1)
+    if sr != SR:
+        x = np.interp(np.arange(int(len(x) * SR / sr)) / SR, np.arange(len(x)) / sr, x)
+    return x / (np.abs(x).max() + 1e-9)
+
+
+def pitch(x, ratio):
+    """Resample to shift pitch/speed (ratio > 1 = higher and shorter)."""
+    n = int(len(x) / ratio)
+    return np.interp(np.arange(n) * ratio, np.arange(len(x)), x)
+
+
+def mixin(dst, src, at, g=1.0):
+    i = int(at * SR)
+    j = min(len(dst), i + len(src))
+    if i < len(dst):
+        dst[i:j] += src[: j - i] * g
+
+
+def sampled(kind, dur):
+    """Sample-based versions of the main cues; returns None to fall back to synthesis."""
+    if kind == "cannon":
+        a, b = smp("cannon-02"), smp("low-frequency-explosion-000")
+        if a is None or b is None:
+            return None
+        out = np.zeros(int(4.0 * SR))
+        mixin(out, a, 0.0, 1.0)
+        mixin(out, b, 0.02, 0.7)
+        return reverb(out, 2.4, 0.3)
+    if kind == "cannon-far":
+        a = smp("cannon-01")
+        if a is None:
+            return None
+        out = np.zeros(int(4.0 * SR))
+        mixin(out, pitch(a, rng.uniform(0.82, 0.95)), 0.0)
+        return fft_filter(reverb(out, 3.0, 0.5), 20, 1500)
+    if kind == "clash":
+        a = smp("sword-clash-1")
+        return None if a is None else reverb(np.concatenate([a, np.zeros(SR)]), 1.2, 0.25)
+    if kind == "hit":
+        a, b = smp("sword-clash-3"), smp("impact-soft")
+        if a is None or b is None:
+            return None
+        out = np.zeros(int(1.5 * SR)); mixin(out, a, 0, 0.8); mixin(out, b, 0, 0.7)
+        return out
+    if kind == "impact":
+        a, b = smp("impact-deep"), smp("perc_impact1")
+        if a is None or b is None:
+            return None
+        out = np.zeros(int(2.0 * SR)); mixin(out, a, 0, 1.0); mixin(out, b, 0, 0.6)
+        return reverb(out, 1.4, 0.25)
+    if kind == "boom":
+        return smp("misc_cineboom")
+    if kind == "whoosh":
+        return smp("whoosh-pass-slow")
+    if kind == "whoosh-soft":
+        a = smp("whoosh-low")
+        return None if a is None else fft_filter(a, 80, 5000)
+    if kind == "whoosh-long":
+        return smp("ambi_dark_woosh")
+    if kind == "riser":
+        return smp("riser-long")
+    if kind == "thud":
+        a = smp("drum_tom_lo_hard")
+        return None if a is None else pitch(a, 0.8)[: int(0.9 * SR)] * np.exp(-np.arange(int(0.9 * SR))[: len(pitch(a, 0.8))] / SR * 3)
+    if kind == "drumroll":
+        return smp("drum_roll")
+    if kind == "battle":
+        d = dur or 5.0
+        n = int(d * SR)
+        out = fft_filter(rng.standard_normal(n), 25, 220) * 0.25
+        cf = smp("cannon-01")
+        bangs = [smp(b) for b in ("bang-01", "bang-03", "bang-05")]
+        if cf is None or any(b is None for b in bangs):
+            return None
+        far = fft_filter(reverb(np.concatenate([pitch(cf, 0.8), np.zeros(SR)]), 2.5, 0.55), 20, 1200)
+        crack = [fft_filter(pitch(b, 1.6), 600, 7000) for b in bangs]
+        tt = 0.2
+        while tt < d - 0.6:  # distant cannonade
+            mixin(out, pitch(far, rng.uniform(0.85, 1.12)), tt, rng.uniform(0.3, 0.7))
+            tt += rng.uniform(0.4, 1.0)
+        tt = 0.5
+        while tt < d - 0.5:  # musket volleys: many small bangs, far away
+            for _ in range(rng.integers(6, 16)):
+                mixin(out, pitch(crack[rng.integers(0, 3)], rng.uniform(0.85, 1.25)), tt + rng.uniform(0, 0.4), rng.uniform(0.06, 0.18))
+            tt += rng.uniform(0.7, 1.6)
+        out = reverb(out, 1.8, 0.35)
+        t = np.arange(n) / SR
+        out = out[:n] * np.minimum(1, t / 0.4) * np.minimum(1, (d - t) / 1.0)
+        return out
+    return None
+
+
 def sfx(kind, dur=None):
+    s = sampled(kind, dur)
+    if s is not None:
+        return s / (np.abs(s).max() + 1e-9)
     if kind in ("whoosh", "whoosh-soft", "whoosh-long"):
         d = {"whoosh": 0.9, "whoosh-soft": 0.7, "whoosh-long": 1.8}[kind]
         n = int(d * SR)

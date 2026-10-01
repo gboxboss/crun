@@ -12,7 +12,8 @@ import numpy as np
 import soundfile as sf
 
 SR = 48000
-SF2 = os.environ.get("SOUNDFONT", "/usr/share/sounds/sf2/FluidR3_GM.sf2")
+_GU = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "www", "assets", "vendor", "sf", "GeneralUser-GS.sf2")
+SF2 = os.environ.get("SOUNDFONT") or (_GU if os.path.exists(_GU) else "/usr/share/sounds/sf2/FluidR3_GM.sf2")
 TPB = 960  # ticks per beat at 60 bpm -> 960 ticks per second
 
 # channel -> (GM program, volume)
