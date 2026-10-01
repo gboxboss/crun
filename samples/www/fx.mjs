@@ -416,3 +416,57 @@ export function label(g, str, x, y, o = {}) {
   const { size = 30, family = 'Oswald', weight = 700, color = '#fff', alpha = 1, tracking = 2, align = 'center', halo = 'rgba(8,10,14,0.88)', haloWidth = null } = o;
   text(g, str, x, y, { size, family, weight, color, alpha, tracking, align, halo, haloWidth: haloWidth ?? Math.max(5, size * 0.28) });
 }
+
+// ---------- clean campaign arrow (v2) ----------
+// Constant on-screen width (no zoom scaling), crisp isosceles head, flat fill with a soft drop shadow and a thin
+// darker edge. Optional slight taper at the tail. style: 'solid' | 'outline' (white fill, coloured edge) | 'dashed'.
+export function cleanArrow(g, pts, o = {}) {
+  const { width = 22, color = '#2f6bff', edge = 'rgba(0,0,0,0.55)', alpha = 1, head = 2.3, headLen = 1.9, tail = 0.55,
+    shadow = true, style = 'solid', dashT = 0 } = o;
+  if (alpha <= 0.002 || pts.length < 2) return null;
+  const cum = cumulative(pts), L = cum[cum.length - 1];
+  if (L < 3) return null;
+  const P = resample(pts, cum, L, 2.5);
+  const grow = clamp(L / (width * 4));
+  const hl = width * headLen * lerp(0.5, 1, grow), hw = (width * head) / 2 * lerp(0.5, 1, grow);
+  let bi = P.length - 1;
+  while (bi > 0 && L - P[bi][2] < hl) bi--;
+  const tip = P[P.length - 1], base = P[bi];
+  let dx = tip[0] - base[0], dy = tip[1] - base[1];
+  const dl = Math.hypot(dx, dy) || 1; dx /= dl; dy /= dl;
+  const nx = -dy, ny = dx;
+  const left = [], right = [], K = 6;
+  for (let i = 0; i <= bi; i++) {
+    const a = P[Math.max(0, i - K)], b = P[Math.min(bi, i + K)];
+    let tx = b[0] - a[0], ty = b[1] - a[1];
+    const l0 = Math.hypot(tx, ty) || 1, m = smooth((i - (bi - 2 * K)) / (2 * K));
+    tx = lerp(tx / l0, dx, m); ty = lerp(ty / l0, dy, m);
+    const tl = Math.hypot(tx, ty) || 1; tx /= tl; ty /= tl;
+    const w = (width / 2) * lerp(tail, 1, smooth(P[i][2] / (width * 5)));
+    left.push([P[i][0] - ty * w, P[i][1] + tx * w]); right.push([P[i][0] + ty * w, P[i][1] - tx * w]);
+  }
+  const path = new Path2D();
+  path.moveTo(left[0][0], left[0][1]);
+  for (let i = 1; i < left.length; i++) path.lineTo(left[i][0], left[i][1]);
+  path.lineTo(base[0] + nx * hw, base[1] + ny * hw);
+  path.lineTo(base[0] + dx * hl, base[1] + dy * hl);
+  path.lineTo(base[0] - nx * hw, base[1] - ny * hw);
+  for (let i = right.length - 1; i >= 0; i--) path.lineTo(right[i][0], right[i][1]);
+  path.closePath();
+  g.save(); g.globalAlpha *= alpha; g.lineJoin = 'miter'; g.miterLimit = 3;
+  if (shadow) { g.save(); g.shadowColor = 'rgba(0,0,0,0.45)'; g.shadowBlur = width * 0.5; g.shadowOffsetY = width * 0.22; g.fillStyle = 'rgba(0,0,0,0.6)'; g.fill(path); g.restore(); }
+  if (style === 'outline') {
+    g.fillStyle = 'rgba(255,255,255,0.92)'; g.fill(path); g.strokeStyle = color; g.lineWidth = Math.max(2, width * 0.18); g.stroke(path);
+  } else {
+    g.fillStyle = color; g.fill(path);
+    if (style === 'dashed') { // moving light dashes along the centre line (retreats, supply lines)
+      g.save(); g.clip(path); g.beginPath();
+      for (let i = 0; i <= bi; i++) (i ? g.lineTo(P[i][0], P[i][1]) : g.moveTo(P[i][0], P[i][1]));
+      g.setLineDash([width * 0.9, width * 0.9]); g.lineDashOffset = -dashT * width * 2;
+      g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = width * 0.3; g.stroke(); g.restore();
+    }
+    g.strokeStyle = edge; g.lineWidth = Math.max(1.2, width * 0.08); g.stroke(path);
+  }
+  g.restore();
+  return { tip: [base[0] + dx * hl, base[1] + dy * hl], base: [base[0], base[1]], dir: [dx, dy] };
+}
