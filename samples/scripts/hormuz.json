@@ -1,0 +1,18 @@
+{
+  "voice": "af_heart",
+  "speed": 1.08,
+  "lang": "en-us",
+  "lead_in": 0.35,
+  "tail": 1.6,
+  "phrases": [
+    { "id": "h1", "text": "This narrow strip of water can shake the entire world economy.", "pause": 0.35 },
+    { "id": "h2", "text": "It's the Strait of Hormuz.", "pause": 0.3 },
+    { "id": "h3", "text": "At its narrowest, it's less than forty kilometres wide.", "pause": 0.15 },
+    { "id": "h4", "text": "And the shipping lanes? Just a few kilometres each way.", "pause": 0.35 },
+    { "id": "h5", "text": "Yet every single day, around a fifth of the world's oil passes through here.", "pause": 0.3 },
+    { "id": "h6", "text": "Tankers leaving Saudi Arabia, Iraq, Kuwait, Qatar and the Emirates all funnel through this one gap,", "pause": 0.1 },
+    { "id": "h7", "text": "with Iran on one side, and Oman on the other.", "pause": 0.4 },
+    { "id": "h8", "text": "If it ever closed, oil prices around the world would surge.", "pause": 0.35 },
+    { "id": "h9", "text": "That's why this tiny strait is one of the most watched places on Earth.", "pause": 0.0 }
+  ]
+}

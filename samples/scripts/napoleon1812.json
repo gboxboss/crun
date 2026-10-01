@@ -1,0 +1,18 @@
+{
+  "voice": "bf_emma",
+  "speed": 0.98,
+  "lang": "en-gb",
+  "lead_in": 2.6,
+  "tail": 2.4,
+  "phrases": [
+    { "id": "n1", "text": "Summer, eighteen twelve.", "pause": 0.5 },
+    { "id": "n2", "text": "Napoleon has gathered more than six hundred thousand men, the largest army Europe has ever seen.", "pause": 0.35 },
+    { "id": "n3", "text": "In June, they cross the Niemen River, into Russia.", "pause": 0.45 },
+    { "id": "n4", "text": "But the Russians refuse to fight. They retreat east, burning what they leave behind.", "pause": 0.45 },
+    { "id": "n5", "text": "In September, at Borodino, the two armies finally collide, in one of the bloodiest single days of the age.", "pause": 0.5 },
+    { "id": "n6", "text": "A week later, Napoleon marches into Moscow. The city is almost empty, and within hours, it's on fire.", "pause": 0.45 },
+    { "id": "n7", "text": "He waits for a surrender that never comes. In October, he turns back.", "pause": 0.6 },
+    { "id": "n8", "text": "And then, the winter arrives.", "pause": 0.9 },
+    { "id": "n9", "text": "Of the hundreds of thousands who set out, only a fraction ever made it home.", "pause": 0.0 }
+  ]
+}

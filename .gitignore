@@ -10,3 +10,8 @@ spikes/webgl-render/www/data/*
 !spikes/webgl-render/www/data/country_labels.geojson
 spikes/webgl-render/out/
 spikes/webgl-render/remotion/build/
+
+# samples: fetched assets and render outputs
+samples/www/lib/
+samples/www/assets/
+samples/build/

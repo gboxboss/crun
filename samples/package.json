@@ -1,0 +1,10 @@
+{
+  "name": "map-video-samples",
+  "private": true,
+  "description": "Hand-directed sample videos for the map-story generator (MapLibre + canvas overlays, rendered frame by frame).",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "maplibre-gl": "6.11.2",
+    "playwright-core": "1.56.1"
+  }
+}
