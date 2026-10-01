@@ -19,7 +19,7 @@ await Promise.all(fonts.map(async ([fam, file]) => { const f = new FontFace(fam,
 const timing = await fetch(`/build/${SCENE}/timing.json`).then(r => r.json());
 const T = K.makeTiming(timing);
 const mod = await import(`./scenes/${SCENE}.mjs`);
-const scene = mod.default({ T, W, H, FPS, K, maplibregl, A });
+const scene = mod.default({ T, W, H, FPS, K, maplibregl, A, ...(P.get('look') ? { look: P.get('look') } : {}) });
 
 const out = document.createElement('canvas');
 out.width = W; out.height = H;

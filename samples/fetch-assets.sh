@@ -51,3 +51,5 @@ cp node_modules/maplibre-gl/dist/maplibre-gl.mjs node_modules/maplibre-gl/dist/m
    node_modules/maplibre-gl/dist/maplibre-gl-shared.mjs node_modules/maplibre-gl/dist/maplibre-gl.css www/lib/
 echo "assets ready: $(find $A/dem -name '*.png' | wc -l) DEM tiles"
 python3 tools/flatten_dem.py $A/dem
+# satellite base for the "Orbital Satellite" look (Blue Marble + Sentinel-2 mosaics, ~2-3 min)
+[ -s $A/sat/sat.json ] || python3 tools/build_satellite.py $A/sat

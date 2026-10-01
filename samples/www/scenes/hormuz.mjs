@@ -1,5 +1,6 @@
 // Sample 1 — "Dark Geopolitics" vertical short: the Strait of Hormuz.
-export default ({ T, W, H, K, A }) => {
+export default ({ T, W, H, K, A, look = 'dark' }) => {
+  const SAT = look === 'satellite';
   const D = A + 'data/';
   // Safe zone for TikTok / Shorts / Reels UI (1080x1920): top 270, bottom 672, left 65, right 150
   const SAFE = { top: 270, bottom: H - 672, left: 65, right: W - 150 };
@@ -14,7 +15,7 @@ export default ({ T, W, H, K, A }) => {
   const tFifth = T.ws('h5', 'fifth');
   const tOil = T.ws('h5', 'oil');
   const countries = [
-    { a3: 'SAU', name: 'SAUDI ARABIA', flag: 'sa', word: ['h6', 'Saudi'], port: [50.16, 26.64], labelAt: [46.5, 24.6] },
+    { a3: 'SAU', name: 'SAUDI ARABIA', flag: 'sa', word: ['h6', 'Saudi'], port: [50.16, 26.64], labelAt: [45.2, 23.6] },
     { a3: 'IRQ', name: 'IRAQ', flag: 'iq', word: ['h6', 'Iraq'], port: [48.80, 29.68], labelAt: [44.0, 32.5] },
     { a3: 'KWT', name: 'KUWAIT', flag: 'kw', word: ['h6', 'Kuwait'], port: [48.15, 29.07], labelAt: [47.6, 29.35] },
     { a3: 'QAT', name: 'QATAR', flag: 'qa', word: ['h6', 'Qatar'], port: [51.55, 25.93], labelAt: [51.2, 25.3] },
@@ -58,11 +59,26 @@ export default ({ T, W, H, K, A }) => {
   ], { drift: 0.008, driftZoom: 0.03 });
 
   // ---- style (dark geopolitics) ----
+  // map labels on the bright satellite base: white with a heavy dark outline
+  const LB = SAT ? { halo: 'rgba(10,12,16,0.9)', haloWidth: 11 } : {};
   const C = { ocean: '#070b10', land: '#18202a', border: '#3a4654', amber: '#FFB000', red: '#FF4D4D', cyan: '#3FD0FF', text: '#E8EEF4' };
   const hl = (id, a3, color) => [
     { id: `hl-${id}`, type: 'fill', source: 'countries', filter: ['==', ['get', 'ADM0_A3'], a3], paint: { 'fill-color': color, 'fill-opacity': 0 } },
-    { id: `hlo-${id}`, type: 'line', source: 'countries', filter: ['==', ['get', 'ADM0_A3'], a3], paint: { 'line-color': color, 'line-width': 2.2, 'line-opacity': 0, 'line-blur': 0.5 } },
+    { id: `hlo-${id}`, type: 'line', source: 'countries', filter: ['==', ['get', 'ADM0_A3'], a3], paint: { 'line-color': color, 'line-width': SAT ? 3.2 : 2.2, 'line-opacity': 0, 'line-blur': 0.5 } },
   ];
+  const satLayers = [
+    { id: 'world', type: 'raster', source: 'world', paint: { 'raster-fade-duration': 0, 'raster-resampling': 'linear', 'raster-saturation': 0.05 } },
+    { id: 'ocean-tint', type: 'fill', source: 'ocean', paint: { 'fill-color': '#2b7d99', 'fill-opacity': 0.42 } },
+    { id: 'gulf-mid', type: 'raster', source: 'gulfMid', paint: { 'raster-fade-duration': 0, 'raster-brightness-max': 0.93, 'raster-contrast': 0.06, 'raster-saturation': 0.12 } },
+    { id: 'gulf-fine', type: 'raster', source: 'gulfFine', paint: { 'raster-fade-duration': 0, 'raster-brightness-max': 0.93, 'raster-contrast': 0.06, 'raster-saturation': 0.12 } },
+    { id: 'relief', type: 'hillshade', source: 'dem', paint: { 'hillshade-shadow-color': 'rgba(40,25,10,0.42)', 'hillshade-highlight-color': 'rgba(255,255,255,0.10)', 'hillshade-accent-color': 'rgba(40,25,10,0.2)', 'hillshade-exaggeration': 0.45, 'hillshade-illumination-direction': 315 } },
+  ];
+  const satSources = {
+    world: { type: 'image', url: A + 'sat/world.jpg', coordinates: [[-180, 85.0511], [180, 85.0511], [180, -85.0511], [-180, -85.0511]] },
+    gulfMid: { type: 'image', url: A + 'sat/gulf_mid.png', coordinates: [[32, 42], [70, 42], [70, 6], [32, 6]] },
+    gulfFine: { type: 'image', url: A + 'sat/gulf_fine.png', coordinates: [[47, 31], [60, 31], [60, 22], [47, 22]] },
+    ocean: { type: 'geojson', data: D + 'ne_10m_ocean.geojson', tolerance: 0.3 },
+  };
   const style = {
     version: 8,
     projection: { type: 'globe' },
@@ -72,8 +88,16 @@ export default ({ T, W, H, K, A }) => {
       land: { type: 'geojson', data: D + 'ne_10m_land.geojson', tolerance: 0.3 },
       countries: { type: 'geojson', data: D + 'ne_10m_admin_0_countries.geojson', tolerance: 0.3 },
       dem: { type: 'raster-dem', tiles: [A + 'dem/{z}/{x}/{y}.png'], encoding: 'terrarium', tileSize: 256, maxzoom: 8 },
+      ...(SAT ? satSources : {}),
     },
-    layers: [
+    layers: SAT ? [
+      { id: 'bg', type: 'background', paint: { 'background-color': '#1c5670' } },
+      ...satLayers,
+      ...countries.flatMap(c => hl(c.a3, c.a3, C.amber)),
+      ...hl('IRN', 'IRN', C.red),
+      ...hl('OMN', 'OMN', '#2EC4B6'),
+      { id: 'borders', type: 'line', source: 'countries', paint: { 'line-color': 'rgba(255,255,255,0.55)', 'line-width': ['interpolate', ['linear'], ['zoom'], 2, 0.4, 7, 1.3] } },
+    ] : [
       { id: 'bg', type: 'background', paint: { 'background-color': C.ocean } },
       { id: 'land', type: 'fill', source: 'land', paint: { 'fill-color': C.land } },
       { id: 'relief', type: 'hillshade', source: 'dem', paint: { 'hillshade-shadow-color': 'rgba(0,0,0,0.85)', 'hillshade-highlight-color': 'rgba(150,175,200,0.32)', 'hillshade-accent-color': 'rgba(0,0,0,0.4)', 'hillshade-exaggeration': 0.65, 'hillshade-illumination-direction': 315 } },
@@ -98,7 +122,7 @@ export default ({ T, W, H, K, A }) => {
   const mapState = (t, api) => {
     countries.forEach((c, i) => {
       const on = K.ramp(t, c.t - 0.1, c.t + 0.35) * (1 - K.ramp(t, tIran - 0.2, tIran + 0.6));
-      api.paint(`hl-${c.a3}`, 'fill-opacity', 0.32 * on);
+      api.paint(`hl-${c.a3}`, 'fill-opacity', (SAT ? 0.38 : 0.32) * on);
       api.paint(`hlo-${c.a3}`, 'line-opacity', on);
     });
     const iran = K.ramp(t, tIran - 0.05, tIran + 0.4) * (1 - K.ramp(t, tWatched, tWatched + 1));
@@ -152,6 +176,11 @@ export default ({ T, W, H, K, A }) => {
     K.pulseRing(g, sp[0], sp[1], t, { color: '255,77,77', r0: 6, r1: 60, rings: 3, alpha: K.clamp(markerA) });
     K.dot(g, sp[0], sp[1], 6, '#FF4D4D', { glow: 20, alpha: K.clamp(markerA) });
 
+    // satellite look: a soft dark scrim behind top titles so they read over bright desert
+    if (SAT) {
+      const scrimA = Math.max(K.window01(t, 0.05, 0.4, 3.6, 4.1), K.ramp(t, tWatched + 0.4, tWatched + 1.0));
+      if (scrimA > 0) { const gr = g.createLinearGradient(0, 0, 0, SAFE.top + 420); gr.addColorStop(0, `rgba(0,0,0,${0.55 * scrimA})`); gr.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = gr; g.fillRect(0, 0, W, SAFE.top + 420); }
+    }
     // hook title
     const hookA = K.window01(t, 0.05, 0.4, 3.6, 4.1);
     K.text(g, "THE WORLD'S MOST", midX, SAFE.top + 70, { family: 'Oswald', weight: 700, size: 82, color: C.text, halo: 'rgba(0,0,0,0.6)', haloWidth: 10, alpha: hookA, tracking: 2 });
@@ -162,8 +191,8 @@ export default ({ T, W, H, K, A }) => {
     if (nameA > 0) {
       const lp = P([56.15, 26.95]);
       const tr = K.lerp(18, 6, K.easeOut(K.ramp(t, tHormuz - 0.1, tHormuz + 0.8)));
-      K.text(g, 'STRAIT OF', lp[0] - 40, lp[1] - 74, { family: 'Oswald', weight: 500, size: 34, color: '#9fb3c8', alpha: nameA, tracking: tr });
-      K.text(g, 'HORMUZ', lp[0] - 40, lp[1] - 28, { family: 'Oswald', weight: 700, size: 66, color: C.text, alpha: nameA, tracking: tr, shadow: { color: 'rgba(255,77,77,0.6)', blur: 24 } });
+      K.text(g, 'STRAIT OF', lp[0] - 40, lp[1] - 74, { family: 'Oswald', weight: 500, size: 34, color: SAT ? '#ffffff' : '#9fb3c8', alpha: nameA, tracking: tr, ...LB });
+      K.text(g, 'HORMUZ', lp[0] - 40, lp[1] - 28, { family: 'Oswald', weight: 700, size: 66, color: C.text, alpha: nameA, tracking: tr, ...LB, shadow: { color: 'rgba(255,77,77,0.6)', blur: 24 } });
     }
 
     // ruler (< 40 km)
@@ -193,8 +222,8 @@ export default ({ T, W, H, K, A }) => {
       K.arrow(g, api.projectLine(laneIn), grow, { width: 14 * zs, fill: 'rgba(63,208,255,0.85)', stroke: 'rgba(0,0,0,0.6)', strokeWidth: 2, tail: 0.6, head: 2.2, alpha: lA, shadow: 'rgba(63,208,255,0.5)' });
       K.arrow(g, api.projectLine(laneOut), grow, { width: 14 * zs, fill: 'rgba(255,176,0,0.9)', stroke: 'rgba(0,0,0,0.6)', strokeWidth: 2, tail: 0.6, head: 2.2, alpha: lA, shadow: 'rgba(255,176,0,0.5)' });
       const lp = P([57.25, 25.75]);
-      K.text(g, 'SHIPPING LANES', lp[0], lp[1] - 40, { family: 'Oswald', weight: 600, size: 38, color: C.text, alpha: lA * K.ramp(t, tLanes + 0.3, tLanes + 0.7), tracking: 3 });
-      K.text(g, '~3 KM EACH WAY', lp[0], lp[1] + 4, { family: 'Inter', weight: 700, size: 28, color: '#9fb3c8', alpha: lA * K.ramp(t, tLanes + 0.5, tLanes + 0.9), tracking: 2 });
+      K.text(g, 'SHIPPING LANES', lp[0], lp[1] - 40, { family: 'Oswald', weight: 600, size: 38, color: C.text, alpha: lA * K.ramp(t, tLanes + 0.3, tLanes + 0.7), tracking: 3, ...LB });
+      K.text(g, '~3 KM EACH WAY', lp[0], lp[1] + 4, { family: 'Inter', weight: 700, size: 28, color: SAT ? '#ffffff' : '#9fb3c8', alpha: lA * K.ramp(t, tLanes + 0.5, tLanes + 0.9), tracking: 2, ...LB });
     }
 
     // tanker flow along the trunk + per-country routes
@@ -225,7 +254,7 @@ export default ({ T, W, H, K, A }) => {
       const lp0 = P(c.labelAt), lp = [cx(lp0[0]), lp0[1]];
       const pop = K.easeOutBack(K.ramp(t, c.t - 0.05, c.t + 0.45, x => x));
       K.flag(g, flags[c.flag], lp[0], lp[1] - 46, 84, t, { alpha: a, scale: pop });
-      K.text(g, c.name, lp[0], lp[1] + 12, { family: 'Oswald', weight: 700, size: 38, color: C.amber, alpha: a, tracking: 2 });
+      K.text(g, c.name, lp[0], lp[1] + 12, { family: 'Oswald', weight: 700, size: SAT ? 42 : 38, color: SAT ? '#ffffff' : C.amber, alpha: a, tracking: 2, ...LB });
       const pp = P(c.port);
       K.dot(g, pp[0], pp[1], 6, '#FFB000', { glow: 16, alpha: a });
     });
@@ -233,8 +262,8 @@ export default ({ T, W, H, K, A }) => {
     // Iran / Oman labels
     const iA = K.window01(t, tIran - 0.05, tIran + 0.3, tClosed - 0.3, tClosed + 0.2);
     const oA = K.window01(t, tOman - 0.05, tOman + 0.3, tClosed - 0.3, tClosed + 0.2);
-    if (iA > 0) { const p0 = P([55.6, 28.3]), p = [cx(p0[0]), p0[1]]; K.flag(g, flags.ir, p[0], p[1] - 60, 92, t, { alpha: iA, scale: K.easeOutBack(K.ramp(t, tIran, tIran + 0.45, x => x)) }); K.text(g, 'IRAN', p[0], p[1], { family: 'Oswald', weight: 700, size: 58, color: '#ff8a8a', alpha: iA, tracking: 6 }); }
-    if (oA > 0) { const p0 = P([57.6, 23.6]), p = [cx(p0[0]), p0[1]]; K.flag(g, flags.om, p[0], p[1] - 60, 92, t, { alpha: oA, scale: K.easeOutBack(K.ramp(t, tOman, tOman + 0.45, x => x)) }); K.text(g, 'OMAN', p[0], p[1], { family: 'Oswald', weight: 700, size: 58, color: '#7fe3d8', alpha: oA, tracking: 6 }); }
+    if (iA > 0) { const p0 = P([55.6, 28.3]), p = [cx(p0[0]), p0[1]]; K.flag(g, flags.ir, p[0], p[1] - 60, 92, t, { alpha: iA, scale: K.easeOutBack(K.ramp(t, tIran, tIran + 0.45, x => x)) }); K.text(g, 'IRAN', p[0], p[1], { family: 'Oswald', weight: 700, size: 58, color: SAT ? '#ffffff' : '#ff8a8a', alpha: iA, tracking: 6, ...LB }); }
+    if (oA > 0) { const p0 = P([57.6, 23.6]), p = [cx(p0[0]), p0[1]]; K.flag(g, flags.om, p[0], p[1] - 60, 92, t, { alpha: oA, scale: K.easeOutBack(K.ramp(t, tOman, tOman + 0.45, x => x)) }); K.text(g, 'OMAN', p[0], p[1], { family: 'Oswald', weight: 700, size: 58, color: SAT ? '#ffffff' : '#7fe3d8', alpha: oA, tracking: 6, ...LB }); }
 
     // closure: barrier slam + warning
     const cA = K.window01(t, tClosed - 0.05, tClosed + 0.1, tWatched - 0.2, tWatched + 0.4);
@@ -277,10 +306,10 @@ export default ({ T, W, H, K, A }) => {
   };
 
   const post = (g, t, frame) => {
-    K.vignette(g, W, H, { strength: 0.6, inner: 0.5 });
+    K.vignette(g, W, H, SAT ? { strength: 0.38, inner: 0.55 } : { strength: 0.6, inner: 0.5 });
     const red = Math.max(0, Math.sin(Math.PI * K.ramp(t, tSurge - 0.2, tSurge + 1.4, x => x))) * 0.5;
     if (red > 0) K.vignette(g, W, H, { strength: red, color: '200,20,20', inner: 0.35 });
-    K.grain(g, W, H, frame, 0.07);
+    K.grain(g, W, H, frame, SAT ? 0.035 : 0.07);
   };
 
   const sfx = () => [

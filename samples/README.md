@@ -1,6 +1,6 @@
 # Sample videos (hand-directed previews)
 
-These two short videos preview the product's look before the real pipeline exists. Each scene was directed by hand in code, but they are rendered with the same approach the product will use:
+These short videos preview the product's look before the real pipeline exists. Each scene was directed by hand in code, but they are rendered with the same approach the product will use:
 - a MapLibre map;
 - 2D overlays for arrows, labels, captions, particles and textures;
 - a frame-by-frame deterministic render on CPU;
@@ -9,6 +9,7 @@ These two short videos preview the product's look before the real pipeline exist
 | Scene | Format | Style | Topic |
 |---|---|---|---|
 | `hormuz` | 9:16, 1080×1920, ~34 s | Dark Geopolitics | Why the Strait of Hormuz matters |
+| `hormuz_sat` | 9:16, 1080×1920, ~34 s | Orbital Satellite | Same script on a natural-colour satellite map |
 | `napoleon1812` | 16:9, 1920×1080, ~46 s | Campaign Parchment | Napoleon's march on Moscow, 1812 |
 
 **What is placeholder** (the product would replace these):
@@ -33,11 +34,12 @@ These two short videos preview the product's look before the real pipeline exist
 
 ```bash
 npm install && ./fetch-assets.sh                      # map data, terrain tiles, fonts, flags, MapLibre
-pip install kokoro-onnx soundfile pillow              # voice model files: see KOKORO_DIR in tools/tts.py
+pip install kokoro-onnx soundfile pillow numpy rasterio              # voice model files: see KOKORO_DIR in tools/tts.py
 export KOKORO_DIR=/path/to/kokoro-model-files        # kokoro-v1.0.onnx + voices-v1.0.bin
 sudo apt-get install -y mesa-vulkan-drivers libegl-mesa0 libegl1 ffmpeg
 node server.js 8090 &
 ./make.sh hormuz 1080 1920 3
+./make.sh hormuz_sat 1080 1920 3                      # satellite look (same scene, look=satellite)
 ./make.sh napoleon1812 1920 1080 3
 # preview stills: node render.js scene=hormuz w=1080 h=1920 stills=2.5,10,20 outdir=build/hormuz/stills
 ```
@@ -46,6 +48,7 @@ node server.js 8090 &
 
 - Natural Earth: public domain.
 - Terrain from the Terrarium elevation tiles on AWS Open Data (Mapzen/Tilezen). Sources include SRTM, GMTED, ETOPO1 and EU-DEM: "Produced using Copernicus data and information funded by the European Union – EU-DEM layers".
+- Satellite imagery: NASA Blue Marble (public domain) for the globe. The regional detail "contains modified Copernicus Sentinel data (2021) processed by ESA WorldCover consortium" (ESA WorldCover S2 RGBNIR composite, CC BY 4.0, AWS Open Data). Built by `tools/build_satellite.py`.
 - Fonts: Oswald, Montserrat, Inter, Cinzel and Cormorant Garamond (SIL OFL).
 - Flags: flag-icons (MIT).
 - MapLibre GL JS: BSD-3-Clause.
