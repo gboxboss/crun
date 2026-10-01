@@ -470,3 +470,220 @@ export function cleanArrow(g, pts, o = {}) {
   g.restore();
   return { tip: [base[0] + dx * hl, base[1] + dy * hl], base: [base[0], base[1]], dir: [dx, dy] };
 }
+
+// ---------- Napoleonic soldier figures (procedural sprites) ----------
+// A marching line infantryman: shako with plume, coat with tails, white crossbelts and trousers, shouldered musket.
+// Sprites are pre-rendered per uniform and walk phase, then stamped; height h is in screen px.
+const SPRITES = new Map();
+const UNIFORMS = {
+  fr: { coat: '#2448a8', facing: '#c8312b', trousers: '#eef0f2', shako: '#15161a', plume: '#c8312b', plate: '#d9b44a' },
+  ru: { coat: '#1f5a36', facing: '#b8322c', trousers: '#eef0f2', shako: '#15161a', plume: '#15161a', plate: '#d9b44a' },
+  frRet: { coat: '#5f6e8f', facing: '#8a5552', trousers: '#c9ccd2', shako: '#2a2b30', plume: '#7a4442', plate: '#9a8a5a' },
+};
+function drawSoldier(c, u, U, ph, standing, back = false) {
+  const ink = 'rgba(10,10,14,0.95)', X = 60, Y = 200; // feet at (X, Y) in 120x210 sprite space
+  const sw = standing ? 0 : Math.sin(ph) * 0.42, bob = standing ? 0 : Math.abs(Math.cos(ph)) * 2.2;
+  c.save(); c.translate(0, -bob); c.lineCap = 'round'; c.lineJoin = 'round';
+  const leg = (a, front) => {
+    const hx = X + (front ? 2 : -2), hy = Y - 62, kx = hx + Math.sin(a) * 30, ky = hy + Math.cos(a) * 30;
+    const fx = kx + Math.sin(a * 0.5) * 30, fy = ky + Math.cos(a * 0.5) * 30 + bob;
+    for (const [col, w] of [[ink, 17], [U.trousers, 12]]) { c.strokeStyle = col; c.lineWidth = w; c.beginPath(); c.moveTo(hx, hy); c.lineTo(kx, ky); c.lineTo(fx, fy); c.stroke(); }
+    c.fillStyle = ink; c.beginPath(); c.ellipse(fx + 5, fy + 1, 9, 4.5, 0, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = ink; c.lineWidth = 12; c.beginPath(); c.moveTo(kx + (fx - kx) * 0.62, ky + (fy - ky) * 0.62); c.lineTo(fx, fy - 2); c.stroke(); // gaiters
+  };
+  leg(-sw, false);
+  // musket (behind the body), shouldered on the left side
+  c.strokeStyle = ink; c.lineWidth = 7; c.beginPath(); c.moveTo(X - 6, Y - 80); c.lineTo(X + 16, Y - 182); c.stroke();
+  c.strokeStyle = '#6b4a2b'; c.lineWidth = 4; c.beginPath(); c.moveTo(X - 6, Y - 80); c.lineTo(X + 13, Y - 168); c.stroke();
+  c.strokeStyle = '#c9ced6'; c.lineWidth = 2.2; c.beginPath(); c.moveTo(X + 13, Y - 168); c.lineTo(X + 18, Y - 196); c.stroke();
+  // coat tails + torso
+  c.fillStyle = U.coat; c.strokeStyle = ink; c.lineWidth = 3.5;
+  c.beginPath(); c.moveTo(X - 15, Y - 112); c.lineTo(X + 15, Y - 112); c.lineTo(X + 16, Y - 70); c.lineTo(X - 2, Y - 64); c.lineTo(X - 22, Y - 52); c.lineTo(X - 17, Y - 72); c.closePath(); c.fill(); c.stroke();
+  c.strokeStyle = 'rgba(255,255,255,0.9)'; c.lineWidth = 3.2; c.beginPath(); c.moveTo(X - 12, Y - 110); c.lineTo(X + 13, Y - 74); c.moveTo(X + 12, Y - 110); c.lineTo(X - 13, Y - 74); c.stroke();
+  c.fillStyle = U.facing; c.fillRect(X - 15, Y - 113, 30, 5);
+  if (back) { // knapsack with rolled greatcoat
+    c.fillStyle = '#7a5a36'; c.strokeStyle = ink; c.lineWidth = 2.5; K_rr(c, X - 13, Y - 108, 26, 26, 4); c.fill(); c.stroke();
+    c.fillStyle = '#8b8f99'; K_rr(c, X - 15, Y - 115, 30, 8, 4); c.fill(); c.stroke();
+  }
+  leg(sw, true);
+  // arm holding the musket butt
+  c.strokeStyle = ink; c.lineWidth = 12; c.beginPath(); c.moveTo(X - 2, Y - 106); c.lineTo(X - 9, Y - 88); c.lineTo(X - 5, Y - 80); c.stroke();
+  c.strokeStyle = U.coat; c.lineWidth = 8; c.stroke();
+  // head + shako + plume
+  c.fillStyle = back ? '#3a2a1e' : '#e2b993'; c.strokeStyle = ink; c.lineWidth = 3; c.beginPath(); c.arc(X + 1, Y - 124, 10, 0, Math.PI * 2); c.fill(); c.stroke();
+  c.fillStyle = U.shako; c.beginPath(); c.moveTo(X - 10, Y - 130); c.lineTo(X + 12, Y - 130); c.lineTo(X + 13, Y - 156); c.lineTo(X - 11, Y - 156); c.closePath(); c.fill();
+  if (!back) { c.fillStyle = U.plate; c.fillRect(X - 3, Y - 146, 7, 8); }
+  c.fillStyle = U.plume; c.strokeStyle = ink; c.lineWidth = 2; c.beginPath(); c.ellipse(X + 1, Y - 163, 5, 8, 0, 0, Math.PI * 2); c.fill(); c.stroke();
+  c.fillStyle = ink; c.fillRect(X - 13, Y - 132, 26, 3.5); // visor
+  c.restore();
+}
+function K_rr(c, x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); }
+function soldierSprite(nation, frame, standing, back) {
+  const key = nation + frame + (standing ? 's' : '') + (back ? 'b' : '');
+  if (SPRITES.has(key)) return SPRITES.get(key);
+  const c = document.createElement('canvas'); c.width = 240; c.height = 420;
+  const x = c.getContext('2d'); x.scale(2, 2);
+  drawSoldier(x, 1, UNIFORMS[nation], (frame / 8) * Math.PI * 2, standing, back);
+  SPRITES.set(key, c);
+  return c;
+}
+// one figure; (x, y) = feet; h = figure height in px; dir = +1 facing right, -1 left
+export function soldier(g, x, y, h, o = {}) {
+  const { nation = 'fr', t = 0, alpha = 1, dir = 1, standing = false, speed = 1.8, seed = 0, shadow = true, back = false } = o;
+  if (alpha <= 0.01 || h < 3) return;
+  const frame = standing ? 0 : Math.floor(((t * speed + seed * 0.37) % 1 + 1) % 1 * 8);
+  const spr = soldierSprite(nation, frame, standing, back);
+  const s = h / 200, w = 120 * s, hh = 210 * s;
+  g.save(); g.globalAlpha *= alpha;
+  if (shadow) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.beginPath(); g.ellipse(x, y, 14 * s * 1.6, 5 * s * 1.6, 0, 0, Math.PI * 2); g.fill(); }
+  g.translate(x, y); g.scale(dir, 1);
+  g.drawImage(spr, -60 * s, -200 * s, w, hh);
+  g.restore();
+}
+// flag on a pole carried at the front (waving tricolour etc.)
+export function standard(g, x, y, h, img, t, o = {}) {
+  const { alpha = 1, dir = 1 } = o;
+  if (alpha <= 0.01) return;
+  const top = y - h, fw = h * 0.62, fh = h * 0.44;
+  g.save(); g.globalAlpha *= alpha; g.lineCap = 'round';
+  g.strokeStyle = 'rgba(10,10,14,0.95)'; g.lineWidth = Math.max(3, h * 0.05); g.beginPath(); g.moveTo(x, y); g.lineTo(x, top - h * 0.06); g.stroke();
+  g.strokeStyle = '#8a6a3a'; g.lineWidth = Math.max(1.6, h * 0.025); g.stroke();
+  g.fillStyle = '#d9b44a'; g.beginPath(); g.arc(x, top - h * 0.07, h * 0.035, 0, Math.PI * 2); g.fill();
+  const strips = 16, iw = img.width, ih = img.height;
+  for (let i = 0; i < strips; i++) {
+    const u = i / strips, dx = dir * fw * u, wave = Math.sin(t * 6 - u * 5) * fh * 0.12 * u;
+    const sx = dir > 0 ? iw * u : iw * (1 - u - 1 / strips);
+    g.drawImage(img, sx, 0, iw / strips + 1, ih, x + (dir > 0 ? dx : dx - fw / strips), top + wave, fw / strips + 0.8, fh);
+    const sh = 0.16 * Math.sin(t * 6 - u * 5 + 1.2) * u;
+    g.fillStyle = sh > 0 ? `rgba(255,255,255,${sh})` : `rgba(0,0,0,${-sh})`;
+    g.fillRect(x + (dir > 0 ? dx : dx - fw / strips), top + wave, fw / strips + 0.8, fh);
+  }
+  g.restore();
+}
+
+// ---------- fire seen from above: glow + flicker + embers + a smoke plume drifting downwind ----------
+export function burnSpot(g, x, y, t, o = {}) {
+  const { scale = 1, alpha = 1, seed = 1, wind = [1, -0.35], smoke = 1, heat = 1 } = o;
+  if (alpha <= 0.01 || scale <= 0.02) return;
+  g.save();
+  // smoke plume: soft dark puffs that grow and drift downwind, rising toward the camera (up the screen)
+  for (let i = 0; i < 14; i++) {
+    const life = 5.0, ph = ((t + hash2(i, seed) * life) % life) / life;
+    const d = ph * 150 * scale;
+    const sx = x + wind[0] * d + (noise1(t * 0.4 + i, seed) - 0.5) * 18 * scale;
+    const sy = y + wind[1] * d - ph * 40 * scale;
+    const r = (9 + 42 * Math.sqrt(ph)) * scale;
+    const a = 0.34 * smooth(ph * 6) * (1 - ph) * smoke * alpha;
+    const gr = g.createRadialGradient(sx, sy, 0, sx, sy, r);
+    gr.addColorStop(0, `rgba(46,42,40,${a})`); gr.addColorStop(0.6, `rgba(52,48,46,${a * 0.55})`); gr.addColorStop(1, 'rgba(52,48,46,0)');
+    g.fillStyle = gr; g.fillRect(sx - r, sy - r, 2 * r, 2 * r);
+  }
+  g.globalCompositeOperation = 'lighter';
+  const fl = 0.78 + 0.22 * noise1(t * 6 + seed, seed) + 0.1 * Math.sin(t * 23 + seed);
+  for (const [R, c, a] of [[70, '255,110,30', 0.22], [30, '255,150,50', 0.5], [12, '255,230,170', 0.75]]) {
+    const r = R * scale * (0.9 + 0.1 * fl);
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, `rgba(${c},${a * fl * heat * alpha})`); gr.addColorStop(1, `rgba(${c},0)`);
+    g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+  }
+  for (let i = 0; i < 10; i++) {
+    const life = 1.6, ph = ((t + hash2(i, seed + 9) * life) % life) / life;
+    const ex = x + (hash2(i, seed + 10) - 0.5) * 22 * scale + wind[0] * ph * 40 * scale;
+    const ey = y - ph * 50 * scale + wind[1] * ph * 20 * scale;
+    g.fillStyle = `rgba(255,${170 + Math.round(70 * hash2(i, seed))},90,${(1 - ph) * alpha * heat})`;
+    g.fillRect(ex, ey, 2.2 * scale + 0.6, 2.2 * scale + 0.6);
+  }
+  g.restore();
+}
+
+// ---------- texture-based fire & smoke (organic shapes instead of circles) ----------
+function fbmCanvas(size, seed, cell, oct, map) {
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  const x = c.getContext('2d'), im = x.createImageData(size, size);
+  const val = (ix, iy, s, per) => hash2(((ix % per) + per) % per * 7919 + ((iy % per) + per) % per, s);
+  const vn = (px, py, sc, s) => {
+    const per = Math.round(size / sc), fx = px / sc, fy = py / sc, ix = Math.floor(fx), iy = Math.floor(fy), tx = fx - ix, ty = fy - iy;
+    const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+    return lerp(lerp(val(ix, iy, s, per), val(ix + 1, iy, s, per), sx), lerp(val(ix, iy + 1, s, per), val(ix + 1, iy + 1, s, per), sx), sy);
+  };
+  for (let py = 0; py < size; py++) for (let px = 0; px < size; px++) {
+    let n = 0, amp = 0.5, sc = cell, tot = 0;
+    for (let o = 0; o < oct; o++) { n += amp * vn(px, py, sc, seed + o); tot += amp; amp *= 0.5; sc /= 2; }
+    const [r, gg, b, a] = map(n / tot, px / size, py / size);
+    const i = (py * size + px) * 4; im.data[i] = r; im.data[i + 1] = gg; im.data[i + 2] = b; im.data[i + 3] = a;
+  }
+  x.putImageData(im, 0, 0);
+  return c;
+}
+let FIRE_TEX = null, SMOKE_TEX = null;
+function fireTextures() {
+  if (FIRE_TEX) return;
+  // burning ground: tileable noise thresholded into irregular hot patches (red -> orange -> yellow-white)
+  FIRE_TEX = [0, 1].map(k => fbmCanvas(256, 40 + k * 7, 64, 5, n => {
+    const v = clamp((n - 0.43) / 0.24);
+    if (v <= 0) return [0, 0, 0, 0];
+    return [255, Math.round(60 + 170 * v), Math.round(20 + 140 * v * v), Math.round(255 * Math.min(1, v * 1.6))];
+  }));
+  // smoke puff: fbm with a soft round falloff
+  SMOKE_TEX = fbmCanvas(192, 77, 48, 5, (n, u, v) => {
+    const d = Math.hypot(u - 0.5, v - 0.5) * 2, fall = clamp(1 - d) ** 1.6;
+    const a = clamp((n - 0.28) / 0.5) * fall;
+    return [255, 255, 255, Math.round(255 * a)];
+  });
+}
+// city/area fire: quad = projected [nw, ne, sw] corners of the burning area; spread in [0,1] grows it from the centre
+export function areaFire(g, quad, t, o = {}) {
+  const { alpha = 1, spread = 1, wind = [-1, -0.3], night = 1, seed = 0, smoke = 1 } = o;
+  if (alpha <= 0.01 || spread <= 0.01) return;
+  fireTextures();
+  const [nw, ne, sw] = quad;
+  const ax = (ne[0] - nw[0]), ay = (ne[1] - nw[1]), bx = (sw[0] - nw[0]), by = (sw[1] - nw[1]);
+  const cx = nw[0] + (ax + bx) / 2, cy = nw[1] + (ay + by) / 2, R = Math.hypot(ax, ay) / 2;
+  // smoke first: dark plumes, lit orange from below near the fire at night
+  g.save();
+  for (let i = 0; i < 20; i++) {
+    const life = 7, ph = ((t * 0.9 + hash2(i, seed + 3) * life) % life) / life;
+    const ox = (hash2(i, seed + 4) - 0.5) * 1.2 * R * spread, oy = (hash2(i, seed + 5) - 0.5) * 0.6 * R * spread;
+    const d = ph * R * 2.8;
+    const sx = cx + ox + wind[0] * d, sy = cy + oy + wind[1] * d - ph * R * 0.6;
+    const sz = R * (0.5 + 1.4 * Math.sqrt(ph)) * (0.6 + 0.4 * spread);
+    const a = 0.7 * smooth(ph * 5) * (1 - ph) * smoke * alpha;
+    g.save(); g.translate(sx, sy); g.rotate(hash2(i, seed + 6) * 6.28 + t * 0.05);
+    g.globalAlpha = a; g.filter = 'brightness(0.22)'; g.drawImage(SMOKE_TEX, -sz / 2, -sz / 2, sz, sz);
+    const lit = night * (1 - ph) ** 2;
+    if (lit > 0.02) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = a * lit * 0.55; g.filter = 'sepia(1) saturate(4) hue-rotate(-12deg) brightness(0.8)'; g.drawImage(SMOKE_TEX, -sz / 2, -sz / 2, sz, sz); }
+    g.restore();
+  }
+  g.restore();
+  g.filter = 'none';
+  // burning patches mapped onto the area (affine), two drifting layers, soft round edge that grows with spread
+  const bw = Math.ceil(R * 2.4), bh = bw;
+  const buf = document.createElement('canvas'); buf.width = bw; buf.height = bh;
+  const bx2 = buf.getContext('2d');
+  for (let k = 0; k < 2; k++) {
+    const fl = 0.75 + 0.25 * noise1(t * 5 + k * 3, seed + k);
+    bx2.save();
+    bx2.setTransform(ax / 256, ay / 256, bx / 256, by / 256, nw[0] - (cx - bw / 2), nw[1] - (cy - bh / 2));
+    const off = (t * 9 * (k ? -1 : 1)) % 256;
+    bx2.globalAlpha = fl * (k ? 0.85 : 1); bx2.globalCompositeOperation = 'lighter';
+    for (const dx of [-256, 0, 256]) bx2.drawImage(FIRE_TEX[k], off + dx, k ? off * 0.5 : 0, 256, 256);
+    bx2.restore();
+  }
+  const mr = R * 1.3 * Math.max(0.08, spread);
+  const mask = bx2.createRadialGradient(bw / 2, bh / 2, mr * 0.35, bw / 2, bh / 2, mr);
+  mask.addColorStop(0, 'rgba(0,0,0,1)'); mask.addColorStop(1, 'rgba(0,0,0,0)');
+  bx2.globalCompositeOperation = 'destination-in'; bx2.fillStyle = mask; bx2.fillRect(0, 0, bw, bh);
+  g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = alpha;
+  g.drawImage(buf, cx - bw / 2, cy - bh / 2); g.globalAlpha = alpha * 0.3; g.drawImage(buf, cx - bw / 2, cy - bh / 2);
+  const gl = g.createRadialGradient(cx, cy, 0, cx, cy, R * 2.2 * (0.4 + 0.6 * spread));
+  gl.addColorStop(0, `rgba(255,120,40,${0.35 * alpha})`); gl.addColorStop(1, 'rgba(255,80,20,0)');
+  g.globalAlpha = 1; g.fillStyle = gl; g.fillRect(cx - R * 2.5, cy - R * 2.5, R * 5, R * 5);
+  for (let i = 0; i < 26; i++) { // embers lifting downwind
+    const life = 2.4, ph = ((t + hash2(i, seed + 9) * life) % life) / life;
+    const ex = cx + (hash2(i, seed + 10) - 0.5) * R * 1.6 * spread + wind[0] * ph * R * 0.8;
+    const ey = cy + (hash2(i, seed + 11) - 0.5) * R * 0.8 * spread - ph * R * 0.7;
+    g.fillStyle = `rgba(255,${180 + Math.round(60 * hash2(i, seed))},100,${(1 - ph) * alpha * (0.5 + 0.5 * Math.sin(t * 17 + i))})`;
+    g.fillRect(ex, ey, 2.4, 2.4);
+  }
+  g.restore();
+}

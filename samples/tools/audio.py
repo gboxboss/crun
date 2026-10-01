@@ -387,6 +387,8 @@ def main():
         f = np.fft.rfftfreq(n, 1 / SR)
         gcurve = np.clip((f - 28) / 20, 0, 1) * (0.55 + 0.45 * np.clip((f - 60) / 140, 0, 1))  # trim sub-bass, keep the voice clear
         music = np.stack([np.fft.irfft(np.fft.rfft(music[:, c]) * gcurve, n=n) for c in range(2)], -1)
+        tend = spec.get("marks", {}).get("end", dur)
+        music *= np.clip((tend - t) / 1.6, 0, 1)[:, None]
     elif spec:
         m = build_music(dur, spec)
         music[:len(m)] = m[:n, None] * db(-14)
