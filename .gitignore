@@ -15,3 +15,5 @@ spikes/webgl-render/remotion/build/
 samples/www/lib/
 samples/www/assets/
 samples/build/
+
+__pycache__/
