@@ -5,6 +5,8 @@
   "license": "UNLICENSED",
   "dependencies": {
     "maplibre-gl": "6.11.2",
-    "playwright-core": "1.56.1"
+    "playwright-core": "1.56.1",
+    "@iconify-json/game-icons": "^1.2.0",
+    "@iconify-json/mdi": "^1.2.0"
   }
 }

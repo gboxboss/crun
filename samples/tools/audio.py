@@ -141,15 +141,27 @@ def sfx(kind, dur=None):
         for i in idx:
             crack[i:i + 800] += rng.standard_normal(800) * np.exp(-np.arange(800) / 90) * rng.uniform(0.2, 1)
         crack = fft_filter(crack, 1500, 9000)
-        out = (rumble + crack * 0.7) * np.minimum(1, t / 0.8) * np.minimum(1, (d - t) / 0.8)
+        roar = fft_filter(rng.standard_normal(n), 120, 900) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.4 * t) * np.sin(2 * np.pi * 0.13 * t))
+        out = (rumble + crack * 0.7 + roar * 0.45) * np.minimum(1, t / 0.8) * np.minimum(1, (d - t) / 0.8)
         return out / (np.abs(out).max() + 1e-9)
     if kind == "wind":
         d = dur or 6.0
         n = int(d * SR)
         t = np.arange(n) / SR
         base = rng.standard_normal(n)
-        lfo = 0.6 + 0.4 * np.sin(2 * np.pi * 0.23 * t) * np.sin(2 * np.pi * 0.07 * t + 1)
-        out = (fft_filter(base, 250, 1200) * lfo + fft_filter(base, 1200, 3500) * (1 - lfo) * 0.5)
+        blk, hop = int(0.2 * SR), int(0.1 * SR)
+        win = np.hanning(blk)
+        out = np.zeros(n + blk)
+        for i in range(0, n, hop):  # moving band centre = howl
+            seg = base[i:i + blk]
+            if len(seg) < blk:
+                seg = np.pad(seg, (0, blk - len(seg)))
+            tc = i / SR
+            fc = 420 + 260 * np.sin(2 * np.pi * 0.11 * tc) + 120 * np.sin(2 * np.pi * 0.37 * tc + 1)
+            out[i:i + blk] += fft_filter(seg * win, fc * 0.8, fc * 1.25) + fft_filter(seg * win, 120, 400) * 0.6
+        out = out[:n]
+        gust = 0.55 + 0.45 * (0.5 + 0.5 * np.sin(2 * np.pi * 0.17 * t) * np.sin(2 * np.pi * 0.05 * t + 2))
+        out = out * gust + fft_filter(base, 2500, 6000) * 0.08 * gust
         out *= np.minimum(1, t / 1.5) * np.minimum(1, (d - t) / 1.5)
         return out / (np.abs(out).max() + 1e-9)
     if kind == "paper":
@@ -157,6 +169,121 @@ def sfx(kind, dur=None):
         t = np.arange(n) / SR
         out = fft_filter(rng.standard_normal(n), 1500, 8000) * (np.abs(np.sin(2 * np.pi * 9 * t)) ** 3) * np.exp(-t * 4)
         return out / (np.abs(out).max() + 1e-9)
+    if kind in ("cannon", "cannon-far"):
+        far = kind == "cannon-far"
+        d = 4.0 if far else 3.5
+        n = int(d * SR)
+        t = np.arange(n) / SR
+        f = 58 * np.exp(-t * 9) + 30
+        sub = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 2.2)
+        blast = fft_filter(rng.standard_normal(n), 120, 900 if far else 3200) * np.exp(-t * (14 if far else 26))
+        rumble = fft_filter(rng.standard_normal(n), 25, 160) * np.exp(-t * 1.3) * np.minimum(1, t / 0.03)
+        out = sub * 1.0 + blast * (0.5 if far else 0.9) + rumble * 0.8
+        out = reverb(out, 3.0 if far else 2.2, 0.45 if far else 0.3)
+        if far:
+            out = fft_filter(out, 20, 1200)
+        return out / (np.abs(out).max() + 1e-9)
+    if kind == "battle":
+        d = dur or 5.0
+        n = int(d * SR)
+        t = np.arange(n) / SR
+        out = fft_filter(rng.standard_normal(n), 25, 220) * 0.35  # low rumble bed
+        far = sfx("cannon-far")
+        tt = 0.2
+        while tt < d - 0.5:
+            i = int(tt * SR)
+            j = min(n, i + len(far))
+            out[i:j] += far[: j - i] * rng.uniform(0.25, 0.7)
+            tt += rng.uniform(0.35, 1.1)
+        crack = np.zeros(n)
+        tt = 0.4
+        while tt < d - 0.4:  # musket volleys: ragged bursts of small cracks
+            for _ in range(rng.integers(8, 24)):
+                i = int((tt + rng.uniform(0, 0.35)) * SR)
+                if i < n - 600:
+                    crack[i:i + 600] += rng.standard_normal(600) * np.exp(-np.arange(600) / 70) * rng.uniform(0.2, 1)
+            tt += rng.uniform(0.6, 1.6)
+        out += reverb(fft_filter(crack, 900, 6000), 1.6, 0.5) * 0.45
+        out *= np.minimum(1, t / 0.4) * np.minimum(1, (d - t) / 1.0)
+        return out / (np.abs(out).max() + 1e-9)
+    if kind == "march":
+        d = dur or 4.0
+        n = int(d * SR)
+        t = np.arange(n) / SR
+        out = np.zeros(n)
+        step = 0.6  # the score is at 100 bpm
+        for sol in range(36):  # many feet, slightly out of step
+            off = rng.uniform(-0.05, 0.05)
+            g = rng.uniform(0.3, 1.0)
+            tt = off % step
+            while tt < d - 0.2:
+                i = int(tt * SR)
+                L = int(0.07 * SR)
+                if i + L < n:
+                    out[i:i + L] += rng.standard_normal(L) * np.exp(-np.arange(L) / (0.015 * SR)) * g
+                tt += step
+        out = fft_filter(out, 70, 1400)
+        out *= np.minimum(1, t / 1.0) * np.minimum(1, (d - t) / 1.0)
+        return out / (np.abs(out).max() + 1e-9)
+    if kind == "thud":
+        n = int(0.5 * SR)
+        t = np.arange(n) / SR
+        f = 110 * np.exp(-t * 18) + 45
+        out = np.sin(2 * np.pi * np.cumsum(f) / SR) * np.exp(-t * 10)
+        out += fft_filter(rng.standard_normal(n), 300, 3000) * np.exp(-t * 90) * 0.4
+        return reverb(out, 0.9, 0.2) / (np.abs(out).max() + 1e-9)
+    if kind == "tick":
+        n = int(0.25 * SR)
+        t = np.arange(n) / SR
+        out = np.sin(2 * np.pi * 1300 * t) * np.exp(-t * 70) * 0.6 + fft_filter(rng.standard_normal(n), 2500, 9000) * np.exp(-t * 400)
+        return out / (np.abs(out).max() + 1e-9)
+    if kind == "clock":
+        d = dur or 3.0
+        n = int(d * SR)
+        out = np.zeros(n)
+        tick = sfx("tick")
+        tt, k = 0.0, 0
+        while tt < d - 0.3:
+            i = int(tt * SR)
+            j = min(n, i + len(tick))
+            out[i:j] += tick[: j - i] * (1.0 if k % 2 == 0 else 0.7)
+            tt += 0.25
+            k += 1
+        return out / (np.abs(out).max() + 1e-9)
+    if kind == "bell":
+        d = 6.0
+        n = int(d * SR)
+        t = np.arange(n) / SR
+        f0 = 147.0
+        out = np.zeros(n)
+        for r, dcy, a in [(0.5, 0.25, 0.5), (1.0, 0.4, 0.8), (1.19, 0.5, 0.5), (1.5, 0.6, 0.35), (2.0, 0.7, 0.6), (2.5, 1.0, 0.3), (3.0, 1.3, 0.25), (4.2, 1.8, 0.15)]:
+            out += a * np.sin(2 * np.pi * f0 * r * t + r) * np.exp(-t * dcy)
+        out += fft_filter(rng.standard_normal(n), 800, 5000) * np.exp(-t * 60) * 0.3
+        out = reverb(out, 3.5, 0.4)
+        return out / (np.abs(out).max() + 1e-9)
+    if kind == "gallop":
+        d = dur or 2.0
+        n = int(d * SR)
+        out = np.zeros(n)
+        tt = 0.0
+        while tt < d - 0.3:
+            for off, g in [(0, 1.0), (0.09, 0.75), (0.19, 0.9)]:
+                i = int((tt + off) * SR)
+                L = int(0.05 * SR)
+                if i + L < n:
+                    k = np.arange(L) / SR
+                    out[i:i + L] += (np.sin(2 * np.pi * 180 * k) * np.exp(-k * 60) + rng.standard_normal(L) * np.exp(-k * 120) * 0.5) * g
+            tt += 0.42
+        out = fft_filter(out, 60, 2500)
+        out *= np.minimum(1, np.arange(n) / SR / 0.3)
+        return reverb(out, 1.0, 0.2) / (np.abs(out).max() + 1e-9)
+    if kind == "hit":
+        n = int(0.9 * SR)
+        t = np.arange(n) / SR
+        out = sum(np.sin(2 * np.pi * f * t) * np.exp(-t * dc) for f, dc in [(1460, 9), (2310, 12), (3550, 16)]) * 0.3
+        out += np.sin(2 * np.pi * (90 * np.exp(-t * 20) + 50) * t) * np.exp(-t * 14)
+        out += fft_filter(rng.standard_normal(n), 1500, 8000) * np.exp(-t * 60) * 0.5
+        return reverb(out, 0.8, 0.25) / (np.abs(out).max() + 1e-9)
     raise ValueError(kind)
 
 
@@ -251,25 +378,36 @@ def main():
     sp = np.convolve(sp, np.ones(k) / k, mode="same")
     duck = 1 - 0.78 * np.clip(sp * 1.5, 0, 1)  # about -13 dB under speech
 
-    music = np.zeros(n)
-    if meta.get("music"):
-        m = build_music(dur, meta["music"])
-        music[:len(m)] = m[:n]
-    music *= duck * db(-14)
+    music = np.zeros((n, 2))
+    spec = meta.get("music")
+    if spec and spec.get("score"):
+        sys.path.insert(0, os.path.dirname(__file__))
+        import score
+        music = score.render(spec, dur) * db(-9)
+        f = np.fft.rfftfreq(n, 1 / SR)
+        gcurve = np.clip((f - 28) / 20, 0, 1) * (0.55 + 0.45 * np.clip((f - 60) / 140, 0, 1))  # trim sub-bass, keep the voice clear
+        music = np.stack([np.fft.irfft(np.fft.rfft(music[:, c]) * gcurve, n=n) for c in range(2)], -1)
+    elif spec:
+        m = build_music(dur, spec)
+        music[:len(m)] = m[:n, None] * db(-14)
+    music *= duck[:, None]
 
-    fx = np.zeros(n)
+    fx = np.zeros((n, 2))
     for cue in meta.get("sfx", []):
-        s = sfx(cue["type"], cue.get("dur"))
+        snd = sfx(cue["type"], cue.get("dur"))
         i0 = int(max(0, cue["t"]) * SR)
-        i1 = min(n, i0 + len(s))
-        fx[i0:i1] += s[: i1 - i0] * db(cue.get("gain", -10))
+        i1 = min(n, i0 + len(snd))
+        pan = cue.get("pan", 0.0)
+        gl, gr = np.sqrt(0.5 * (1 - pan)), np.sqrt(0.5 * (1 + pan))
+        fx[i0:i1, 0] += snd[: i1 - i0] * db(cue.get("gain", -10)) * gl * 1.41
+        fx[i0:i1, 1] += snd[: i1 - i0] * db(cue.get("gain", -10)) * gr * 1.41
 
     v = np.zeros(n)
     v[: min(n, len(voice))] = voice[:n]
-    mix = v + music + fx
+    mix = v[:, None] + music + fx
     mix = np.tanh(mix * 1.1) / 1.1
     raw = os.path.join(B, "mix_raw.wav")
-    sf.write(raw, np.stack([mix, mix], -1).astype(np.float32), SR)
+    sf.write(raw, mix.astype(np.float32), SR)
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", raw, "-af", "loudnorm=I=-14:TP=-1.5:LRA=11", "-ar", str(SR), os.path.join(B, "mix.wav")], check=True)
     print("mix.wav written")
 

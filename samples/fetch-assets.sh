@@ -22,7 +22,7 @@ fetch_font 'cinzel/Cinzel%5Bwght%5D.ttf' Cinzel.ttf
 fetch_font 'cormorantgaramond/CormorantGaramond%5Bwght%5D.ttf' Cormorant.ttf
 
 FL=https://raw.githubusercontent.com/lipis/flag-icons/main/flags/4x3
-for c in sa iq kw qa ae ir om bh; do
+for c in sa iq kw qa ae ir om bh fr ru; do
   [ -s "$A/flags/$c.svg" ] || curl -fsSL "$FL/$c.svg" -o "$A/flags/$c.svg"
 done
 
@@ -53,3 +53,7 @@ echo "assets ready: $(find $A/dem -name '*.png' | wc -l) DEM tiles"
 python3 tools/flatten_dem.py $A/dem
 # satellite base for the "Orbital Satellite" look (Blue Marble + Sentinel-2 mosaics, ~2-3 min)
 [ -s $A/sat/sat.json ] || python3 tools/build_satellite.py $A/sat
+# 1812 blocs + rivers, scene icons, Europe satellite pyramid (Napoleon sample, ~6 min)
+python3 tools/build_1812.py $A/data
+node tools/export_icons.mjs $A
+[ -s $A/sat/europe1812/9/306/162.jpg ] || python3 tools/build_sat_tiles.py europe1812 $A/sat/europe1812
